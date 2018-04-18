@@ -16,8 +16,8 @@ from vj4.model.adaptor import setting
 from vj4.util import misc
 from vj4.util import options
 from vj4.util import validator
+from vj4.util import oauth
 from vj4.handler import base
-
 
 class UserSettingsMixin(object):
   def can_view(self, udoc, key):
@@ -148,6 +148,36 @@ class UserLoginHandler(base.Handler):
       self.redirect(self.reverse_url('domain_main'))
     else:
       self.render('user_login.html')
+
+  @base.post_argument
+  @base.sanitize
+  async def post(self, *, uname: str, password: str, rememberme: bool=False):
+    udoc = await user.check_password_by_uname(uname, password, auto_upgrade=True)
+    if not udoc:
+      raise error.LoginError(uname)
+    await asyncio.gather(user.set_by_uid(udoc['_id'],
+                                         loginat=datetime.datetime.utcnow(),
+                                         loginip=self.remote_ip),
+                         self.update_session(new_saved=rememberme, uid=udoc['_id']))
+    self.json_or_redirect(self.referer_or_main)
+
+
+@app.route('/login/jaccount', 'user_login_jaccount', global_route=True)
+class UserLoginHandler(base.Handler):
+  @base.get_argument
+  @base.sanitize
+  async def get(self, *, code: str=None, state: str=None):
+    redirect_url = misc.generate_url(self.reverse_url('user_login_jaccount'))
+    if self.has_priv(builtin.PRIV_USER_PROFILE):
+      self.redirect(self.reverse_url('domain_main'))
+    elif code:
+      # redirected from jaccount oauth server
+      print(code)
+      await oauth.get_profile(code, redirect_url)
+      self.redirect(self.reverse_url('domain_main'))
+    else:
+      self.redirect(oauth.get_authorize_url(redirect_url))
+      # self.render('user_login.html')
 
   @base.post_argument
   @base.sanitize
