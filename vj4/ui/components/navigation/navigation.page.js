@@ -45,7 +45,7 @@ const navigationPage = new AutoloadPage('navigationPage', () => {
     handleScroll();
   }
 
-  $(document).on('click', '[name="nav_logout"]', handleNavLogoutClick);
+  // $(document).on('click', '[name="nav_logout"]', handleNavLogoutClick);
 
   const slideout = new Slideout({
     panel: document.getElementById('panel'),

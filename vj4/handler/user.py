@@ -19,6 +19,7 @@ from vj4.util import validator
 from vj4.util import oauth
 from vj4.handler import base
 
+
 class UserSettingsMixin(object):
   def can_view(self, udoc, key):
     privacy = udoc.get('show_' + key, next(iter(setting.SETTINGS_BY_KEY['show_' + key].range)))
@@ -151,7 +152,7 @@ class UserLoginHandler(base.Handler):
 
   @base.post_argument
   @base.sanitize
-  async def post(self, *, uname: str, password: str, rememberme: bool=False):
+  async def post(self, *, uname: str, password: str, rememberme: bool = False):
     udoc = await user.check_password_by_uname(uname, password, auto_upgrade=True)
     if not udoc:
       raise error.LoginError(uname)
@@ -166,22 +167,38 @@ class UserLoginHandler(base.Handler):
 class UserLoginHandler(base.Handler):
   @base.get_argument
   @base.sanitize
-  async def get(self, *, code: str=None, state: str=None):
+  async def get(self, *, code: str = None, state: str = None):
     redirect_url = misc.generate_url(self.reverse_url('user_login_jaccount'))
     if self.has_priv(builtin.PRIV_USER_PROFILE):
       self.redirect(self.reverse_url('domain_main'))
     elif code:
       # redirected from jaccount oauth server
-      print(code)
-      await oauth.get_profile(code, redirect_url)
-      self.redirect(self.reverse_url('domain_main'))
+      # print(code)
+      data = await oauth.get_profile(code, redirect_url)
+      if not data:
+        raise error.LoginError('')
+      uid = int(data['code'])
+      udoc = await user.get_by_uid(uid)
+      if not udoc:
+        mail = data['account'] + '@sjtu.edu.cn'
+        await user.add(uid=uid, uname=data['account'], password=data['id'], mail=mail, regip=self.remote_ip,
+                       realname=data['name'])
+        udoc = await user.get_by_uid(uid)
+      if not udoc:
+        raise error.LoginError(data['account'])
+      await asyncio.gather(user.set_by_uid(udoc['_id'],
+                                           loginat=datetime.datetime.utcnow(),
+                                           loginip=self.remote_ip),
+                           self.update_session(new_saved=True, uid=udoc['_id']))
+      self.json_or_redirect(self.referer_or_main)
+      # self.redirect(self.reverse_url('domain_main'))
     else:
       self.redirect(oauth.get_authorize_url(redirect_url))
       # self.render('user_login.html')
 
   @base.post_argument
   @base.sanitize
-  async def post(self, *, uname: str, password: str, rememberme: bool=False):
+  async def post(self, *, uname: str, password: str, rememberme: bool = False):
     udoc = await user.check_password_by_uname(uname, password, auto_upgrade=True)
     if not udoc:
       raise error.LoginError(uname)
@@ -204,6 +221,15 @@ class UserLogoutHandler(base.Handler):
   async def post(self):
     await self.delete_session()
     self.json_or_redirect(self.referer_or_main)
+
+
+@app.route('/logout/jaccount', 'user_logout_jaccount', global_route=True)
+class UserLogoutHandler(base.Handler):
+  async def get(self):
+    await self.delete_session()
+    redirect_url = self.referer_or_main
+    # print(oauth.get_logout_url(redirect_url))
+    self.json_or_redirect(oauth.get_logout_url(redirect_url))
 
 
 @app.route('/user/{uid:-?\d+}', 'user_detail')
@@ -269,7 +295,7 @@ class UserSearchHandler(base.Handler):
   @base.get_argument
   @base.route_argument
   @base.sanitize
-  async def get(self, *, q: str, exact_match: bool=False):
+  async def get(self, *, q: str, exact_match: bool = False):
     if exact_match:
       udocs = []
     else:
