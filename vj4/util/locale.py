@@ -7,7 +7,7 @@ import yaml
 
 from vj4.util import options
 
-options.define('default_locale', default='zh_CN', help='Default locale.')
+options.define('default_locale', default='en', help='Default locale.')
 
 _locales = {}
 

@@ -150,6 +150,7 @@ class ContestCommonOperationMixin(object):
       for pid in pids:
         if pid not in exist_pids:
           raise error.ProblemNotFoundError(self.domain_id, pid)
+    return pids
 
   async def hide_problems(self, pids):
     for pid in pids:
@@ -220,6 +221,7 @@ class ContestMainHandler(ContestMixin, ContestPageCategoryMixin, base.Handler):
 class ContestDetailHandler(ContestMixin, ContestPageCategoryMixin, base.OperationHandler):
   DISCUSSIONS_PER_PAGE = 15
 
+  @base.require_perm(builtin.PERM_VIEW_CONTEST)
   @base.get_argument
   @base.route_argument
   @base.sanitize
@@ -262,6 +264,8 @@ class ContestDetailHandler(ContestMixin, ContestPageCategoryMixin, base.Operatio
                 datetime_stamp=self.datetime_stamp,
                 page_title=tdoc['title'], path_components=path_components)
 
+  @base.require_priv(builtin.PRIV_USER_PROFILE)
+  @base.require_perm(builtin.PERM_ATTEND_CONTEST)
   @base.route_argument
   @base.require_csrf_token
   @base.sanitize
@@ -279,9 +283,11 @@ class ContestDetailHandler(ContestMixin, ContestPageCategoryMixin, base.Operatio
 
 @app.route('/{ctype:contest|homework}/{tid:\w{24}}/code', 'contest_code')
 class ContestCodeHandler(base.OperationHandler):
-  @base.limit_rate('contest_code')
+  @base.require_perm(builtin.PERM_VIEW_CONTEST)
+  @base.require_perm(builtin.PERM_READ_RECORD_CODE)
   @base.route_argument
   @base.sanitize
+  @base.limit_rate('contest_code', 3600, 60)
   @base.require_perm(builtin.PERM_VIEW_CONTEST, when=lambda ctype, **kwargs: ctype == 'contest')
   @base.require_perm(builtin.PERM_VIEW_HOMEWORK, when=lambda ctype, **kwargs: ctype == 'homework')
   @base.require_perm(builtin.PERM_READ_RECORD_CODE)
@@ -399,6 +405,9 @@ class ContestDetailProblemSubmitHandler(ContestMixin, ContestPageCategoryMixin, 
       self.json({'rdocs': rdocs})
 
 
+  @base.require_priv(builtin.PRIV_USER_PROFILE)
+  @base.require_perm(builtin.PERM_VIEW_CONTEST)
+  @base.require_perm(builtin.PERM_SUBMIT_PROBLEM)
   @base.route_argument
   @base.post_argument
   @base.require_csrf_token
@@ -407,6 +416,7 @@ class ContestDetailProblemSubmitHandler(ContestMixin, ContestPageCategoryMixin, 
   @base.require_perm(builtin.PERM_VIEW_CONTEST, when=lambda ctype, **kwargs: ctype == 'contest')
   @base.require_perm(builtin.PERM_VIEW_HOMEWORK, when=lambda ctype, **kwargs: ctype == 'homework')
   @base.require_perm(builtin.PERM_SUBMIT_PROBLEM)
+  @base.limit_rate('add_record', 60, 100)
   async def post(self, *, ctype: str, tid: objectid.ObjectId, pid: document.convert_doc_id,
                  lang: str, code: str):
     doc_type = constant.contest.CTYPE_TO_DOCTYPE[ctype]
@@ -470,6 +480,8 @@ class ContestScoreboardDownloadHandler(ContestMixin, base.Handler):
   def _export_status_as_html(self, rows):
     return self.render_html('contest_scoreboard_download_html.html', rows=rows).encode()
 
+  @base.require_perm(builtin.PERM_VIEW_CONTEST)
+  @base.require_perm(builtin.PERM_VIEW_CONTEST_SCOREBOARD)
   @base.route_argument
   @base.sanitize
   @base.require_perm(builtin.PERM_VIEW_CONTEST,            when=lambda ctype, **kwargs: ctype == 'contest')

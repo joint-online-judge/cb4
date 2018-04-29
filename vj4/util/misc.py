@@ -6,7 +6,7 @@ import markupsafe
 import re
 from urllib import parse
 
-from vj4.util import options
+from vj4.util import options, config
 
 
 MARKDOWN_EXTENSIONS = (hoedown.EXT_TABLES |  # Parse PHP-Markdown style tables.
@@ -94,3 +94,20 @@ def format_seconds(seconds):
 def base64_encode(str):
   encoded = base64.b64encode(str.encode())
   return encoded.decode()
+
+
+def dedupe(list):
+  result = []
+  result_set = set()
+  for i in list:
+    if i in result_set:
+      continue
+    result.append(i)
+    result_set.add(i)
+  return result
+
+
+def generate_url(path = '/'):
+  if path[0] != '/':
+    path = '/' + path
+  return config.base.url + path
