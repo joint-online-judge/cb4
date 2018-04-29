@@ -68,6 +68,8 @@ page.problem_detail.sidebar.show_category: Click to Show
 model.contest.homework.status.not_started: Not Started
 model.contest.homework.status.ongoing: Open
 model.contest.homework.status.finished: Finished
+page.contest_main.contest.title: Contest
+page.contest_main.homework.title: Homework
 page.contest_main.homework.banner.extension: Extension
 page.contest_main.homework.item.supplementary.status: Status
 page.contest_main.homework.item.supplementary.open_since: Open Since
