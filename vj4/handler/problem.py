@@ -197,7 +197,7 @@ class ProblemDetailHandler(base.Handler):
     udoc = await user.get_by_uid(pdoc['owner_uid'])
     tdocs = await training.get_multi(self.domain_id, **{'dag.pids': pid}).to_list() \
             if self.has_perm(builtin.PERM_VIEW_TRAINING) else None
-    ctdocs = await contest.get_multi(self.domain_id, pids=pid).to_list() \
+    ctdocs = await contest.get_multi(self.domain_id, document.TYPE_CONTEST, pids=pid).to_list() \
              if self.has_perm(builtin.PERM_VIEW_CONTEST) else None
     path_components = self.build_path(
         (self.translate('problem_main'), self.reverse_url('problem_main')),

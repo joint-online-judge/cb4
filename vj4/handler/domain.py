@@ -6,26 +6,28 @@ import functools
 from vj4 import app
 from vj4 import constant
 from vj4 import error
+from vj4 import constant
 from vj4.model import builtin
+from vj4.model import document
 from vj4.model import domain
 from vj4.model import user
 from vj4.model.adaptor import discussion
 from vj4.model.adaptor import contest
 from vj4.model.adaptor import training
 from vj4.handler import base
-import vj4.handler.training
+from vj4.handler import training as training_handler
 from vj4.util import validator
 
 
 @app.route('/', 'domain_main')
-class DomainMainHandler(base.Handler, vj4.handler.training.TrainingMixin):
+class DomainMainHandler(training_handler.TrainingStatusMixin, base.Handler):
   CONTESTS_ON_MAIN = 5
   TRAININGS_ON_MAIN = 5
   DISCUSSIONS_ON_MAIN = 20
 
   async def prepare_contest(self):
     if self.has_perm(builtin.PERM_VIEW_CONTEST):
-      tdocs = await contest.get_multi(self.domain_id) \
+      tdocs = await contest.get_multi(self.domain_id, document.TYPE_CONTEST) \
                            .limit(self.CONTESTS_ON_MAIN) \
                            .to_list()
       tsdict = await contest.get_dict_status(self.domain_id, self.user['_id'],
@@ -111,9 +113,9 @@ class DomainJoinApplicationsHandler(base.Handler):
     roles = sorted(list(self.domain['roles'].keys()))
     roles_with_text = [(role, role) for role in roles]
     join_settings = domain.get_join_settings(self.domain, self.now)
-    expirations = vj4.constant.domain.JOIN_EXPIRATION_RANGE.copy()
+    expirations = constant.domain.JOIN_EXPIRATION_RANGE.copy()
     if not join_settings:
-      del expirations[vj4.constant.domain.JOIN_EXPIRATION_KEEP_CURRENT]
+      del expirations[constant.domain.JOIN_EXPIRATION_KEEP_CURRENT]
     self.render('domain_manage_join_applications.html', roles_with_text=roles_with_text,
                 join_settings=join_settings, expirations=expirations)
 
