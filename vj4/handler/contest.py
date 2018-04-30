@@ -283,15 +283,13 @@ class ContestDetailHandler(ContestMixin, ContestPageCategoryMixin, base.Operatio
 
 @app.route('/{ctype:contest|homework}/{tid:\w{24}}/code', 'contest_code')
 class ContestCodeHandler(base.OperationHandler):
-  @base.require_perm(builtin.PERM_VIEW_CONTEST)
-  @base.require_perm(builtin.PERM_READ_RECORD_CODE)
   @base.route_argument
   @base.sanitize
   @base.limit_rate('contest_code', 3600, 60)
   @base.require_perm(builtin.PERM_VIEW_CONTEST, when=lambda ctype, **kwargs: ctype == 'contest')
   @base.require_perm(builtin.PERM_VIEW_HOMEWORK, when=lambda ctype, **kwargs: ctype == 'homework')
   @base.require_perm(builtin.PERM_READ_RECORD_CODE)
-  async def get(self, *, tid: objectid.ObjectId):
+  async def get(self, *,  ctype: str, tid: objectid.ObjectId):
     tdoc, tsdocs = await contest.get_and_list_status(self.domain_id, {'$in': [document.TYPE_CONTEST, document.TYPE_HOMEWORK]}, tid)
     rnames = {}
     for tsdoc in tsdocs:
