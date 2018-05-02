@@ -74,6 +74,17 @@ You may also want to install [libmaxminddb](https://github.com/maxmind/libmaxmin
 
 ## Development
 
+### Update the dependencies
+
+There are many conflicts when trying to update to webpack@4.
+
+The code format is based on eslint-config-airbnb@5,
+don't try to change it and also don't change eslint-plugin-jsx-a11y@5.
+
+react and react-dom are kept at version 15 now.
+
+### Deployment
+
 In the root of the repository:
 
 ```bash
