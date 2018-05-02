@@ -43,7 +43,8 @@ module.exports = {
     "UiContext": true,
     "UserContext": true,
     "Context": true,
-    "LOCALES": true
+    "LOCALES": true,
+    "System": true
   },
   "rules": {
     "comma-dangle": [
