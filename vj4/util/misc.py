@@ -6,7 +6,7 @@ import markupsafe
 import re
 from urllib import parse
 
-from vj4.util import options, config
+from vj4.util import options
 
 
 MARKDOWN_EXTENSIONS = (hoedown.EXT_TABLES |  # Parse PHP-Markdown style tables.
@@ -110,4 +110,5 @@ def dedupe(list):
 def generate_url(path = '/'):
   if path[0] != '/':
     path = '/' + path
-  return config.base.url + path
+
+  return options.url_prefix + path

@@ -34,6 +34,11 @@ options.define('changemail_token_expire_seconds', default=3600,
 options.define('url_prefix', default='https://vijos.org', help='URL prefix.')
 options.define('cdn_prefix', default='/', help='CDN prefix.')
 
+# oauth login config
+options.define('oauth', default='', help='OAuth login type')
+options.define('oauth_client_id', default='', help='OAuth client id')
+options.define('oauth_client_secret', default='', help='OAuth client secret')
+
 _logger = logging.getLogger(__name__)
 
 
