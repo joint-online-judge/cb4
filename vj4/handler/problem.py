@@ -208,6 +208,14 @@ class ProblemDetailHandler(base.Handler):
 
 @app.route('/p/{pid}/submit', 'problem_submit')
 class ProblemSubmitHandler(base.Handler):
+  def get_content_type(self, filename):
+    extension = os.path.splitext(filename)[1].lower()
+    if extension == '.tar':
+      return 'application/x-tar'
+    elif extension == '.tar.gz':
+      return 'application/x-compressed-tar'
+    raise error.FileTypeNotAllowedError(filename)
+
   @base.require_perm(builtin.PERM_SUBMIT_PROBLEM)
   @base.route_argument
   @base.sanitize
@@ -240,12 +248,17 @@ class ProblemSubmitHandler(base.Handler):
   @base.require_priv(builtin.PRIV_USER_PROFILE)
   @base.require_perm(builtin.PERM_SUBMIT_PROBLEM)
   @base.route_argument
-  @base.post_argument
+  @base.multipart_argument
   @base.require_csrf_token
   @base.sanitize
   @base.limit_rate('add_record', 60, 100)
-  async def post(self, *, pid: document.convert_doc_id, lang: str, code: str):
+  async def post(self, *, pid: document.convert_doc_id, lang: str, code: objectid.ObjectId):
     # TODO(twd2): check status, eg. test, hidden problem, ...
+
+    # TODO(cb4): check file size
+    # file_info = await fs.get(code)
+    # print(file_info.length)
+
     pdoc = await problem.get(self.domain_id, pid)
     if pdoc.get('hidden', False):
       self.check_perm(builtin.PERM_VIEW_PROBLEM_HIDDEN)

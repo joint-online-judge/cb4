@@ -199,3 +199,22 @@
 {{ checkbox(columns=columns, **kwargs) }}
 {{ form_end(columns=columns, no_label=True, **kwargs) }}
 {% endmacro %}
+
+{% macro fileupload(label='', name='', value=false) %}
+<div
+  name="form_item_{{ name }}"
+  {{ container_attr('radiobox-container', **kwargs) }}
+>
+  <input
+    type="file"
+    name="{{ name }}"
+    {{ form_attr('', **kwargs) }}
+  >
+</div>
+{% endmacro %}
+
+{% macro form_fileupload(columns=5) %}
+{{ form_begin(columns=columns, no_label=True, **kwargs) }}
+{{ fileupload(columns=columns, **kwargs) }}
+{{ form_end(columns=columns, no_label=True, **kwargs) }}
+{% endmacro %}
