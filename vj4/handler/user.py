@@ -176,7 +176,7 @@ class UserLoginHandler(base.Handler):
 
 
 @app.route('/login/jaccount', 'user_login_jaccount', global_route=True)
-class UserLoginHandler(base.Handler):
+class UserLoginHandler(base.Handler, UserSettingsMixin):
   @base.get_argument
   @base.sanitize
   async def get(self, *, code: str = None, state: str = None):
@@ -224,7 +224,7 @@ class UserLoginHandler(base.Handler):
 
 
 @app.route('/logout', 'user_logout', global_route=True)
-class UserLogoutHandler(base.Handler):
+class UserLogoutHandler(base.Handler, UserSettingsMixin):
   @base.require_priv(builtin.PRIV_USER_PROFILE)
   async def get(self):
     self.check_oauth()
@@ -240,7 +240,7 @@ class UserLogoutHandler(base.Handler):
 
 
 @app.route('/logout/jaccount', 'user_logout_jaccount', global_route=True)
-class UserLogoutHandler(base.Handler):
+class UserLogoutHandler(base.Handler, UserSettingsMixin):
   async def get(self):
     self.check_oauth('jaccount')
     await self.delete_session()
