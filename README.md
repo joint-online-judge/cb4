@@ -135,6 +135,9 @@ python3 -m vj4.server --listen=unix:/var/run/vj4.sock
 * Set `--smtp-host`, `--smtp-user` and `--smtp-password` to specify a SMTP server.
 * Set `--db-host` (default: localhost) and/or `--db-name` (default: test) to use a different
   database.
+* Set `--oauth` (default: '') now only jaccount is supported
+* Set `--oauth-client-id` (default: '') if oauth is set
+* Set `--oauth-client-secret` (default: '') if oauth is set
 
 Better to use a reverse proxy like Nginx or h2o.
 
