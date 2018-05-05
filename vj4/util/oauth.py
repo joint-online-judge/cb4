@@ -1,5 +1,5 @@
 from oauthlib import oauth2
-from vj4.util import config
+from vj4.util import options
 from urllib import request, parse
 import json
 
@@ -8,7 +8,7 @@ access_token_url = 'https://jaccount.sjtu.edu.cn/oauth2/token'
 logout_url = 'https://jaccount.sjtu.edu.cn/oauth2/logout'
 profile_url = 'https://api.sjtu.edu.cn/v1/me/profile'
 
-default_client = oauth2.WebApplicationClient(config.jaccount.client_id)
+default_client = oauth2.WebApplicationClient(options.oauth_client_id)
 
 
 def get_authorize_url(redirect_url):
@@ -17,9 +17,9 @@ def get_authorize_url(redirect_url):
 
 
 async def get_profile(code, redirect_url):
-  client = oauth2.WebApplicationClient(config.jaccount.client_id, code)
+  client = oauth2.WebApplicationClient(options.oauth_client_id, code)
   url, headers, body = client.prepare_token_request(access_token_url, redirect_url=redirect_url,
-                                                    client_secret=config.jaccount.client_secret)
+                                                    client_secret=options.oauth_client_secret)
   body = body.encode(encoding='utf-8')
   req = request.Request(url, body, headers)
   res = request.urlopen(req)

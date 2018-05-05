@@ -36,11 +36,16 @@ class UserSettingsMixin(object):
     else:
       return None
 
+  def check_oauth(self, _type = ''):
+    if options.oauth != _type:
+      raise error.ForbiddenError
+
 
 @app.route('/register', 'user_register', global_route=True)
-class UserRegisterHandler(base.Handler):
+class UserRegisterHandler(base.Handler, UserSettingsMixin):
   @base.require_priv(builtin.PRIV_REGISTER_USER)
   async def get(self):
+    self.check_oauth()
     self.render('user_register.html')
 
   @base.require_priv(builtin.PRIV_REGISTER_USER)
@@ -48,6 +53,7 @@ class UserRegisterHandler(base.Handler):
   @base.sanitize
   @base.limit_rate('send_mail', 3600, 50)
   async def post(self, *, mail: str):
+    self.check_oauth()
     validator.check_mail(mail)
     if await user.get_by_mail(mail):
       raise error.UserAlreadyExistError(mail)
@@ -60,13 +66,14 @@ class UserRegisterHandler(base.Handler):
 
 
 @app.route('/register/{code}', 'user_register_with_code', global_route=True)
-class UserRegisterWithCodeHandler(base.Handler):
+class UserRegisterWithCodeHandler(base.Handler, UserSettingsMixin):
   TITLE = 'user_register'
 
   @base.require_priv(builtin.PRIV_REGISTER_USER)
   @base.route_argument
   @base.sanitize
   async def get(self, *, code: str):
+    self.check_oauth()
     doc = await token.get(code, token.TYPE_REGISTRATION)
     if not doc:
       raise error.InvalidTokenError(token.TYPE_REGISTRATION, code)
@@ -77,6 +84,7 @@ class UserRegisterWithCodeHandler(base.Handler):
   @base.post_argument
   @base.sanitize
   async def post(self, *, code: str, uname: str, password: str, verify_password: str):
+    self.check_oauth()
     doc = await token.get(code, token.TYPE_REGISTRATION)
     if not doc:
       raise error.InvalidTokenError(token.TYPE_REGISTRATION, code)
@@ -90,9 +98,10 @@ class UserRegisterWithCodeHandler(base.Handler):
 
 
 @app.route('/lostpass', 'user_lostpass', global_route=True)
-class UserLostpassHandler(base.Handler):
+class UserLostpassHandler(base.Handler, UserSettingsMixin):
   @base.require_priv(builtin.PRIV_REGISTER_USER)
   async def get(self):
+    self.check_oauth()
     self.render('user_lostpass.html')
 
   @base.require_priv(builtin.PRIV_REGISTER_USER)
@@ -100,6 +109,7 @@ class UserLostpassHandler(base.Handler):
   @base.sanitize
   @base.limit_rate('send_mail', 3600, 50)
   async def post(self, *, mail: str):
+    self.check_oauth()
     validator.check_mail(mail)
     udoc = await user.get_by_mail(mail)
     if not udoc:
@@ -114,13 +124,14 @@ class UserLostpassHandler(base.Handler):
 
 
 @app.route('/lostpass/{code}', 'user_lostpass_with_code', global_route=True)
-class UserLostpassWithCodeHandler(base.Handler):
+class UserLostpassWithCodeHandler(base.Handler, UserSettingsMixin):
   TITLE = 'user_lostpass'
 
   @base.require_priv(builtin.PRIV_REGISTER_USER)
   @base.route_argument
   @base.sanitize
   async def get(self, *, code: str):
+    self.check_oauth()
     tdoc = await token.get(code, token.TYPE_LOSTPASS)
     if not tdoc:
       raise error.InvalidTokenError(token.TYPE_LOSTPASS, code)
@@ -132,6 +143,7 @@ class UserLostpassWithCodeHandler(base.Handler):
   @base.post_argument
   @base.sanitize
   async def post(self, *, code: str, password: str, verify_password: str):
+    self.check_oauth()
     tdoc = await token.get(code, token.TYPE_LOSTPASS)
     if not tdoc:
       raise error.InvalidTokenError(token.TYPE_LOSTPASS, code)
@@ -168,6 +180,7 @@ class UserLoginHandler(base.Handler):
   @base.get_argument
   @base.sanitize
   async def get(self, *, code: str = None, state: str = None):
+    self.check_oauth('jaccount')
     redirect_url = misc.generate_url(self.reverse_url('user_login_jaccount'))
     if self.has_priv(builtin.PRIV_USER_PROFILE):
       self.redirect(self.reverse_url('domain_main'))
@@ -199,6 +212,7 @@ class UserLoginHandler(base.Handler):
   @base.post_argument
   @base.sanitize
   async def post(self, *, uname: str, password: str, rememberme: bool = False):
+    self.check_oauth('jaccount')
     udoc = await user.check_password_by_uname(uname, password, auto_upgrade=True)
     if not udoc:
       raise error.LoginError(uname)
@@ -213,12 +227,14 @@ class UserLoginHandler(base.Handler):
 class UserLogoutHandler(base.Handler):
   @base.require_priv(builtin.PRIV_USER_PROFILE)
   async def get(self):
+    self.check_oauth()
     self.render('user_logout.html')
 
   @base.require_priv(builtin.PRIV_USER_PROFILE)
   @base.post_argument
   @base.require_csrf_token
   async def post(self):
+    self.check_oauth()
     await self.delete_session()
     self.json_or_redirect(self.referer_or_main)
 
@@ -226,6 +242,7 @@ class UserLogoutHandler(base.Handler):
 @app.route('/logout/jaccount', 'user_logout_jaccount', global_route=True)
 class UserLogoutHandler(base.Handler):
   async def get(self):
+    self.check_oauth('jaccount')
     await self.delete_session()
     redirect_url = self.referer_or_main
     # print(oauth.get_logout_url(redirect_url))
