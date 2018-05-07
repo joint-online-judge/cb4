@@ -379,10 +379,11 @@ def _get_status_journal(tsdoc):
 
 
 @argmethod.wrap
-async def update_status(domain_id: str, doc_type: int, tid: objectid.ObjectId, uid: int, rid: objectid.ObjectId,
+async def update_status(domain_id: str, tid: objectid.ObjectId, uid: int, rid: objectid.ObjectId,
                         pid: document.convert_doc_id, accept: bool, score: int):
   """This method returns None when the modification has been superseded by a parallel operation."""
-  tdoc = await document.get(domain_id, doc_type, tid)
+  tdoc = await document.get(domain_id, {'$in': [document.TYPE_CONTEST, document.TYPE_HOMEWORK]}, tid)
+  doc_type = tdoc['doc_type']
   tsdoc = await document.rev_push_status(
     domain_id, doc_type, tdoc['doc_id'], uid,
     'journal', {'rid': rid, 'pid': pid, 'accept': accept, 'score': score})
