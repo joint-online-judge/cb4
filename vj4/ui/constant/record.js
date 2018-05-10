@@ -20,6 +20,10 @@ export const STATUS_IGNORED = 30;
 export const TYPE_SUBMISSION = 0;
 export const TYPE_PRETEST = 1;
 
+export const CODE_TYPE_TEXT = 0;
+export const CODE_TYPE_TAR = 1;
+export const CODE_TYPE_ZIP = 2;
+
 export const STATUS_TEXTS = {
   [STATUS_WAITING]: 'Waiting',
   [STATUS_ACCEPTED]: 'Accepted',
@@ -96,3 +100,11 @@ export const TYPE_TEXTS = {
   [TYPE_PRETEST]: 'Pretest',
 };
 attachObjectMeta(TYPE_TEXTS, 'intKey', true);
+
+export const CODE_TYPE_TEXTS = {
+  [CODE_TYPE_TEXT]: 'Text',
+  [CODE_TYPE_TAR]: 'Tarball',
+  [CODE_TYPE_ZIP]: 'Zip File',
+};
+attachObjectMeta(CODE_TYPE_TEXTS, 'intKey', true);
+

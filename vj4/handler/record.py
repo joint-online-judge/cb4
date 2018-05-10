@@ -232,3 +232,24 @@ class RecordPretestDataHandler(base.Handler):
     self.redirect(options.cdn_prefix.rstrip('/') + \
                   self.reverse_url('fs_get', domain_id=builtin.DOMAIN_ID_SYSTEM,
                                    secret=secret))
+
+
+@app.route('/records/{rid}/code', 'record_code')
+class RecordCodeHandler(base.Handler):
+  @base.route_argument
+  @base.sanitize
+  async def get(self, *, rid: objectid.ObjectId):
+    rdoc = await record.get(rid)
+    if not rdoc or rdoc['type'] != constant.record.TYPE_PRETEST:
+      raise error.RecordNotFoundError(rid)
+    if not self.own(rdoc, builtin.PRIV_READ_PRETEST_DATA_SELF, 'uid'):
+      self.check_priv(builtin.PRIV_READ_PRETEST_DATA)
+    if not rdoc.get('code'):
+      raise error.RecordDataNotFoundError(rdoc['_id'])
+    secret = await fs.get_secret(rdoc['code'])
+    if not secret:
+      raise error.RecordDataNotFoundError(rdoc['_id'])
+    self.redirect(options.cdn_prefix.rstrip('/') + \
+                  self.reverse_url('fs_get', domain_id=builtin.DOMAIN_ID_SYSTEM,
+                                   secret=secret))
+

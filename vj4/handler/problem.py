@@ -255,15 +255,17 @@ class ProblemSubmitHandler(base.Handler):
   async def post(self, *, pid: document.convert_doc_id, lang: str, code: objectid.ObjectId):
     # TODO(twd2): check status, eg. test, hidden problem, ...
 
-    # TODO(cb4): check file size
+    # TODO(tc-imba): check file size
     # file_info = await fs.get(code)
     # print(file_info.length)
 
     pdoc = await problem.get(self.domain_id, pid)
     if pdoc.get('hidden', False):
       self.check_perm(builtin.PERM_VIEW_PROBLEM_HIDDEN)
+
+    # TODO(tc-imba): only constant.record.CODE_TYPE_TAR is supported now
     rid = await record.add(self.domain_id, pdoc['doc_id'], constant.record.TYPE_SUBMISSION,
-                           self.user['_id'], lang, code)
+                           self.user['_id'], lang, code, code_type=constant.record.CODE_TYPE_TAR)
     self.json_or_redirect(self.reverse_url('record_detail', rid=rid))
 
 
