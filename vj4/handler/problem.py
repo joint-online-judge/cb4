@@ -25,7 +25,7 @@ from vj4.model.adaptor import training
 from vj4.service import bus
 from vj4.util import pagination
 from vj4.util import options
-
+from vj4.util.misc import filter_language
 
 async def render_or_json_problem_list(self, page, ppcount, pcount, pdocs,
                                       category, psdict, **kwargs):
@@ -208,6 +208,14 @@ class ProblemDetailHandler(base.Handler):
 
 @app.route('/p/{pid}/submit', 'problem_submit')
 class ProblemSubmitHandler(base.Handler):
+  def get_content_type(self, filename):
+    extension = os.path.splitext(filename)[1].lower()
+    if extension == '.tar':
+      return 'application/x-tar'
+    elif extension == '.tar.gz':
+      return 'application/x-compressed-tar'
+    raise error.FileTypeNotAllowedError(filename)
+
   @base.require_perm(builtin.PERM_SUBMIT_PROBLEM)
   @base.route_argument
   @base.sanitize
@@ -232,25 +240,36 @@ class ProblemSubmitHandler(base.Handler):
           (self.translate('problem_main'), self.reverse_url('problem_main')),
           (pdoc['title'], self.reverse_url('problem_detail', pid=pdoc['doc_id'])),
           (self.translate('problem_submit'), None))
+      # print(constant.language.LANG_TEXTS.items())
+      languages = filter_language(pdoc.get('languages') or [])
+      default_lang = len(languages) and list(languages.keys())[0] or ''
       self.render('problem_submit.html', pdoc=pdoc, udoc=udoc, rdocs=rdocs,
-                  page_title=pdoc['title'], path_components=path_components)
+                  page_title=pdoc['title'], path_components=path_components,
+                  languages=languages, default_lang=default_lang)
     else:
       self.json({'rdocs': rdocs})
 
   @base.require_priv(builtin.PRIV_USER_PROFILE)
   @base.require_perm(builtin.PERM_SUBMIT_PROBLEM)
   @base.route_argument
-  @base.post_argument
+  @base.multipart_argument
   @base.require_csrf_token
   @base.sanitize
   @base.limit_rate('add_record', 60, 100)
-  async def post(self, *, pid: document.convert_doc_id, lang: str, code: str):
+  async def post(self, *, pid: document.convert_doc_id, lang: str, code: objectid.ObjectId):
     # TODO(twd2): check status, eg. test, hidden problem, ...
+
+    # TODO(tc-imba): check file size
+    # file_info = await fs.get(code)
+    # print(file_info.length)
+
     pdoc = await problem.get(self.domain_id, pid)
     if pdoc.get('hidden', False):
       self.check_perm(builtin.PERM_VIEW_PROBLEM_HIDDEN)
+
+    # TODO(tc-imba): only constant.record.CODE_TYPE_TAR is supported now
     rid = await record.add(self.domain_id, pdoc['doc_id'], constant.record.TYPE_SUBMISSION,
-                           self.user['_id'], lang, code)
+                           self.user['_id'], lang, code, code_type=constant.record.CODE_TYPE_TAR)
     self.json_or_redirect(self.reverse_url('record_detail', rid=rid))
 
 
@@ -594,13 +613,18 @@ class ProblemSettingsHandler(base.Handler):
   @base.require_csrf_token
   @base.sanitize
   async def post(self, *, pid: document.convert_doc_id, hidden: bool=False,
-                 category: str, tag: str,
+                 category: str, tag: str, languages: str,
                  difficulty_setting: int, difficulty_admin: str=''):
     pdoc = await problem.get(self.domain_id, pid)
     if not self.own(pdoc, builtin.PERM_EDIT_PROBLEM_SELF):
       self.check_perm(builtin.PERM_EDIT_PROBLEM)
     category = self.split_tags(category)
     tag = self.split_tags(tag)
+    _languages = self.split_tags(languages)
+    languages = []
+    for lang in _languages:
+      if constant.language.LANG_TEXTS.get(lang):
+        languages.append(lang)
     for c in category:
       if not (c in builtin.PROBLEM_CATEGORIES
               or c in builtin.PROBLEM_SUB_CATEGORIES):
@@ -615,7 +639,7 @@ class ProblemSettingsHandler(base.Handler):
     else:
       difficulty_admin = None
     await problem.edit(self.domain_id, pdoc['doc_id'], hidden=hidden,
-                       category=category, tag=tag,
+                       category=category, tag=tag, languages=languages,
                        difficulty_setting=difficulty_setting, difficulty_admin=difficulty_admin)
     await job.difficulty.update_problem(self.domain_id, pdoc['doc_id'])
     self.json_or_redirect(self.reverse_url('problem_detail', pid=pid))

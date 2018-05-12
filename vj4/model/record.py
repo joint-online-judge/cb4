@@ -1,5 +1,6 @@
 import asyncio
 import datetime
+from typing import Union
 from bson import objectid
 from pymongo import ReturnDocument
 
@@ -18,9 +19,9 @@ PROJECTION_ALL = None
 
 
 @argmethod.wrap
-async def add(domain_id: str, pid: document.convert_doc_id, type: int, uid: int,
-              lang: str, code: str, data_id: objectid.ObjectId=None, tid: objectid.ObjectId=None,
-              hidden=False):
+async def add(domain_id: str, pid: document.convert_doc_id, type: int, uid: int, lang: str,
+              code: Union[str, objectid.ObjectId], data_id: objectid.ObjectId=None,
+              tid: objectid.ObjectId=None, hidden=False, code_type=constant.record.CODE_TYPE_TEXT):
   validator.check_lang(lang)
   coll = db.coll('record')
   doc = {'hidden': hidden,
@@ -32,6 +33,7 @@ async def add(domain_id: str, pid: document.convert_doc_id, type: int, uid: int,
          'pid': pid,
          'uid': uid,
          'lang': lang,
+         'code_type': code_type,
          'code': code,
          'tid': tid,
          'data_id': data_id,

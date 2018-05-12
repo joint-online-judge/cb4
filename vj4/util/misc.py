@@ -5,9 +5,10 @@ import jinja2
 import markupsafe
 import re
 from urllib import parse
+from collections import OrderedDict
 
 from vj4.util import options
-
+from vj4 import constant
 
 MARKDOWN_EXTENSIONS = (hoedown.EXT_TABLES |  # Parse PHP-Markdown style tables.
                        hoedown.EXT_FENCED_CODE |  # Parse fenced code blocks.
@@ -19,7 +20,6 @@ MARKDOWN_EXTENSIONS = (hoedown.EXT_TABLES |  # Parse PHP-Markdown style tables.
                        hoedown.EXT_DISABLE_INDENTED_CODE)  # Don't parse indented code blocks.
 MARKDOWN_RENDER_FLAGS = (hoedown.HTML_ESCAPE |  # Escape all HTML.
                          hoedown.HTML_HARD_WRAP)  # Render each linebreak as <br>.
-
 
 FS_RE = re.compile(r'\(vijos\:\/\/fs\/([0-9a-f]{40,})\)')
 
@@ -37,7 +37,7 @@ def fs_replace(m):
 def markdown(text):
   text = FS_RE.sub(fs_replace, text)
   return markupsafe.Markup(hoedown.html(
-      text, extensions=MARKDOWN_EXTENSIONS, render_flags=MARKDOWN_RENDER_FLAGS))
+    text, extensions=MARKDOWN_EXTENSIONS, render_flags=MARKDOWN_RENDER_FLAGS))
 
 
 def gravatar_url(gravatar, size=200):
@@ -107,8 +107,17 @@ def dedupe(list):
   return result
 
 
-def generate_url(path = '/'):
+def generate_url(path='/'):
   if path[0] != '/':
     path = '/' + path
 
   return options.url_prefix + path
+
+
+def filter_language(languages: list):
+  dic = OrderedDict()
+  for lang in languages:
+    lang_text = constant.language.LANG_TEXTS.get(lang)
+    if lang_text:
+      dic[lang] = lang_text
+  return dic
