@@ -41,7 +41,7 @@ async def add(domain_id: str, title: str, content: str, owner_uid: int,
   validator.check_content(content)
   pid = await document.add(domain_id, content, owner_uid, document.TYPE_PROBLEM,
                            pid, title=title, data=data, category=category,
-                           hidden=hidden, num_submit=0, num_accept=0)
+                           hidden=hidden, num_submit=0, num_accept=0, languages=[])
   await domain.inc_user(domain_id, owner_uid, num_problems=1)
   return pid
 

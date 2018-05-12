@@ -44,7 +44,7 @@
       </div>
       <div class="section__body">
         <form method="post" enctype="multipart/form-data">
-          {{ form.form_select(label='Code language', options=vj4.constant.language.LANG_TEXTS.items(), name='lang', value=handler.get_setting('code_lang')) }}
+          {{ form.form_select(label='Code language', options=languages.items(), name='lang', value=default_lang) }}
           {{ form.form_fileupload(label='Code', name='code') }}
           <div class="row"><div class="columns">
             <input type="hidden" name="csrf_token" value="{{ handler.csrf_token }}">

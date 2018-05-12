@@ -240,11 +240,11 @@ class RecordCodeHandler(base.Handler):
   @base.sanitize
   async def get(self, *, rid: objectid.ObjectId):
     rdoc = await record.get(rid)
-    if not rdoc or rdoc['type'] != constant.record.TYPE_PRETEST:
+    if not rdoc or rdoc['type'] != constant.record.TYPE_SUBMISSION:
       raise error.RecordNotFoundError(rid)
-    if not self.own(rdoc, builtin.PRIV_READ_PRETEST_DATA_SELF, 'uid'):
-      self.check_priv(builtin.PRIV_READ_PRETEST_DATA)
-    if not rdoc.get('code'):
+    if not self.own(rdoc, builtin.PRIV_READ_RECORD_CODE, 'uid'):
+      self.check_priv(builtin.PRIV_READ_RECORD_CODE)
+    if not rdoc.get('code') or rdoc['code_type'] == constant.record.CODE_TYPE_TEXT:
       raise error.RecordDataNotFoundError(rdoc['_id'])
     secret = await fs.get_secret(rdoc['code'])
     if not secret:
