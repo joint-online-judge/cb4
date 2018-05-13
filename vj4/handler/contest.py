@@ -1,3 +1,4 @@
+import os
 import asyncio
 import calendar
 import collections
@@ -22,6 +23,7 @@ from vj4.model.adaptor import contest
 from vj4.model.adaptor import problem
 from vj4.handler import base
 from vj4.util import pagination
+from vj4.util.misc import filter_language
 
 
 def _parse_pids(pids_str):
@@ -124,7 +126,7 @@ class ContestVisibilityMixin(object):
 
 
 class ContestCommonOperationMixin(object):
-  async def get_scoreboard(self, doc_type: int, tid: objectid.ObjectId, is_export: bool=False):
+  async def get_scoreboard(self, doc_type: int, tid: objectid.ObjectId, is_export: bool = False):
     tdoc, tsdocs = await contest.get_and_list_status(self.domain_id, doc_type, tid)
     if not self.can_show_scoreboard(tdoc):
       if doc_type == document.TYPE_CONTEST:
@@ -143,8 +145,8 @@ class ContestCommonOperationMixin(object):
   async def verify_problems(self, pids):
     pdocs = await problem.get_multi(domain_id=self.domain_id, doc_id={'$in': pids},
                                     fields={'doc_id': 1}) \
-                         .sort('doc_id', 1) \
-                         .to_list()
+      .sort('doc_id', 1) \
+      .to_list()
     exist_pids = [pdoc['doc_id'] for pdoc in pdocs]
     if len(pids) != len(exist_pids):
       for pid in pids:
@@ -177,7 +179,7 @@ class ContestMainHandler(ContestMixin, ContestPageCategoryMixin, base.Handler):
   @base.require_perm(builtin.PERM_VIEW_CONTEST)
   @base.get_argument
   @base.sanitize
-  async def _get_contest(self, *, rule: int=0, page: int=1):
+  async def _get_contest(self, *, rule: int = 0, page: int = 1):
     if not rule:
       tdocs = contest.get_multi(self.domain_id, document.TYPE_CONTEST)
       qs = ''
@@ -188,7 +190,7 @@ class ContestMainHandler(ContestMixin, ContestPageCategoryMixin, base.Handler):
       qs = 'rule={0}'.format(rule)
     tdocs, tpcount, _ = await pagination.paginate(tdocs, page, self.CONTESTS_PER_PAGE)
     tsdict = await contest.get_dict_status(self.domain_id, self.user['_id'],
-                                          (tdoc['doc_id'] for tdoc in tdocs))
+                                           (tdoc['doc_id'] for tdoc in tdocs))
     page_title = self.translate('page.contest_main.contest.title')
     path_components = self.build_path((page_title, None))
     self.render('contest_main.html', page=page, tpcount=tpcount, qs=qs, rule=rule,
@@ -227,12 +229,12 @@ class ContestDetailHandler(ContestMixin, ContestPageCategoryMixin, base.Operatio
   @base.sanitize
   @base.require_perm(builtin.PERM_VIEW_CONTEST, when=lambda ctype, **kwargs: ctype == 'contest')
   @base.require_perm(builtin.PERM_VIEW_HOMEWORK, when=lambda ctype, **kwargs: ctype == 'homework')
-  async def get(self, *, ctype: str, tid: objectid.ObjectId, page: int=1):
+  async def get(self, *, ctype: str, tid: objectid.ObjectId, page: int = 1):
     doc_type = constant.contest.CTYPE_TO_DOCTYPE[ctype]
     tdoc = await contest.get(self.domain_id, doc_type, tid)
     tsdoc, pdict = await asyncio.gather(
-        contest.get_status(self.domain_id, doc_type, tdoc['doc_id'], self.user['_id']),
-        problem.get_dict(self.domain_id, tdoc['pids']))
+      contest.get_status(self.domain_id, doc_type, tdoc['doc_id'], self.user['_id']),
+      problem.get_dict(self.domain_id, tdoc['pids']))
     psdict = dict()
     rdict = dict()
     if tsdoc:
@@ -248,16 +250,16 @@ class ContestDetailHandler(ContestMixin, ContestPageCategoryMixin, base.Operatio
       attended = False
     # discussion
     ddocs, dpcount, dcount = await pagination.paginate(
-        discussion.get_multi(self.domain_id,
-                             parent_doc_type=tdoc['doc_type'],
-                             parent_doc_id=tdoc['doc_id']),
-        page, self.DISCUSSIONS_PER_PAGE)
+      discussion.get_multi(self.domain_id,
+                           parent_doc_type=tdoc['doc_type'],
+                           parent_doc_id=tdoc['doc_id']),
+      page, self.DISCUSSIONS_PER_PAGE)
     uids = set(ddoc['owner_uid'] for ddoc in ddocs)
     uids.add(tdoc['owner_uid'])
     udict = await user.get_dict(uids)
     path_components = self.build_path(
-        (self.translate('page.contest_main.{0}.title'.format(ctype)), self.reverse_url('contest_main', ctype=ctype)),
-        (tdoc['title'], None))
+      (self.translate('page.contest_main.{0}.title'.format(ctype)), self.reverse_url('contest_main', ctype=ctype)),
+      (tdoc['title'], None))
     self.render('{0}_detail.html'.format(ctype), tdoc=tdoc, tsdoc=tsdoc, attended=attended, udict=udict,
                 pdict=pdict, psdict=psdict, rdict=rdict,
                 ddocs=ddocs, page=page, dpcount=dpcount, dcount=dcount,
@@ -289,8 +291,9 @@ class ContestCodeHandler(base.OperationHandler):
   @base.require_perm(builtin.PERM_VIEW_CONTEST, when=lambda ctype, **kwargs: ctype == 'contest')
   @base.require_perm(builtin.PERM_VIEW_HOMEWORK, when=lambda ctype, **kwargs: ctype == 'homework')
   @base.require_perm(builtin.PERM_READ_RECORD_CODE)
-  async def get(self, *,  ctype: str, tid: objectid.ObjectId):
-    tdoc, tsdocs = await contest.get_and_list_status(self.domain_id, {'$in': [document.TYPE_CONTEST, document.TYPE_HOMEWORK]}, tid)
+  async def get(self, *, ctype: str, tid: objectid.ObjectId):
+    tdoc, tsdocs = await contest.get_and_list_status(self.domain_id,
+                                                     {'$in': [document.TYPE_CONTEST, document.TYPE_HOMEWORK]}, tid)
     rnames = {}
     for tsdoc in tsdocs:
       for pdetail in tsdoc.get('detail', []):
@@ -322,8 +325,8 @@ class ContestDetailProblemHandler(ContestMixin, ContestPageCategoryMixin, base.H
     tdoc, pdoc = await asyncio.gather(contest.get(self.domain_id, doc_type, tid),
                                       problem.get(self.domain_id, pid, uid))
     tsdoc, udoc = await asyncio.gather(
-        contest.get_status(self.domain_id, doc_type, tdoc['doc_id'], self.user['_id']),
-        user.get_by_uid(tdoc['owner_uid']))
+      contest.get_status(self.domain_id, doc_type, tdoc['doc_id'], self.user['_id']),
+      user.get_by_uid(tdoc['owner_uid']))
     attended = tsdoc and tsdoc.get('attend') == 1
     if not self.is_finished(tdoc):
       if not attended:
@@ -343,9 +346,9 @@ class ContestDetailProblemHandler(ContestMixin, ContestPageCategoryMixin, base.H
     if pid not in tdoc['pids']:
       raise error.ProblemNotFoundError(self.domain_id, pid, tdoc['doc_id'])
     path_components = self.build_path(
-        (self.translate('page.contest_main.{0}.title'.format(ctype)), self.reverse_url('contest_main', ctype=ctype)),
-        (tdoc['title'], self.reverse_url('contest_detail', ctype=ctype, tid=tid)),
-        (pdoc['title'], None))
+      (self.translate('page.contest_main.{0}.title'.format(ctype)), self.reverse_url('contest_main', ctype=ctype)),
+      (tdoc['title'], self.reverse_url('contest_detail', ctype=ctype, tid=tid)),
+      (pdoc['title'], None))
     self.render('problem_detail.html', tdoc=tdoc, pdoc=pdoc, tsdoc=tsdoc, udoc=udoc,
                 attended=attended,
                 page_title=pdoc['title'], path_components=path_components)
@@ -353,6 +356,12 @@ class ContestDetailProblemHandler(ContestMixin, ContestPageCategoryMixin, base.H
 
 @app.route('/{ctype:contest|homework}/{tid}/{pid}/submit', 'contest_detail_problem_submit')
 class ContestDetailProblemSubmitHandler(ContestMixin, ContestPageCategoryMixin, base.Handler):
+  def get_content_type(self, filename):
+    extension = os.path.splitext(filename)[1].lower()
+    if extension == '.tar':
+      return 'application/x-tar'
+    raise error.FileTypeNotAllowedError(filename)
+
   @base.route_argument
   @base.sanitize
   @base.require_perm(builtin.PERM_VIEW_CONTEST, when=lambda ctype, **kwargs: ctype == 'contest')
@@ -364,8 +373,8 @@ class ContestDetailProblemSubmitHandler(ContestMixin, ContestPageCategoryMixin, 
     tdoc, pdoc = await asyncio.gather(contest.get(self.domain_id, doc_type, tid),
                                       problem.get(self.domain_id, pid, uid))
     tsdoc, udoc = await asyncio.gather(
-        contest.get_status(self.domain_id, doc_type, tdoc['doc_id'], self.user['_id']),
-        user.get_by_uid(tdoc['owner_uid']))
+      contest.get_status(self.domain_id, doc_type, tdoc['doc_id'], self.user['_id']),
+      user.get_by_uid(tdoc['owner_uid']))
     attended = tsdoc and tsdoc.get('attend') == 1
     if not attended:
       if ctype == 'contest':
@@ -385,29 +394,31 @@ class ContestDetailProblemSubmitHandler(ContestMixin, ContestPageCategoryMixin, 
       raise error.ProblemNotFoundError(self.domain_id, pid, tdoc['doc_id'])
     if self.can_show_record(tdoc):
       rdocs = await record.get_user_in_problem_multi(uid, self.domain_id, pdoc['doc_id'], get_hidden=True) \
-                          .sort([('_id', -1)]) \
-                          .limit(10) \
-                          .to_list()
+        .sort([('_id', -1)]) \
+        .limit(10) \
+        .to_list()
     else:
       rdocs = []
     if not self.prefer_json:
       path_components = self.build_path(
-          (self.translate('page.contest_main.{0}.title'.format(ctype)), self.reverse_url('contest_main', ctype=ctype)),
-          (tdoc['title'], self.reverse_url('contest_detail', ctype=ctype, tid=tid)),
-          (pdoc['title'], self.reverse_url('contest_detail_problem', ctype=ctype, tid=tid, pid=pid)),
-          (self.translate('page.contest_detail_problem_submit.{0}.title'.format(ctype)), None))
+        (self.translate('page.contest_main.{0}.title'.format(ctype)), self.reverse_url('contest_main', ctype=ctype)),
+        (tdoc['title'], self.reverse_url('contest_detail', ctype=ctype, tid=tid)),
+        (pdoc['title'], self.reverse_url('contest_detail_problem', ctype=ctype, tid=tid, pid=pid)),
+        (self.translate('page.contest_detail_problem_submit.{0}.title'.format(ctype)), None))
+      languages = filter_language(pdoc.get('languages') or [])
+      default_lang = len(languages) and list(languages.keys())[0] or ''
       self.render('problem_submit.html', tdoc=tdoc, pdoc=pdoc, rdocs=rdocs,
                   tsdoc=tsdoc, udoc=udoc, attended=attended,
-                  page_title=pdoc['title'], path_components=path_components)
+                  page_title=pdoc['title'], path_components=path_components,
+                  languages=languages, default_lang=default_lang)
     else:
       self.json({'rdocs': rdocs})
-
 
   @base.require_priv(builtin.PRIV_USER_PROFILE)
   @base.require_perm(builtin.PERM_VIEW_CONTEST)
   @base.require_perm(builtin.PERM_SUBMIT_PROBLEM)
   @base.route_argument
-  @base.post_argument
+  @base.multipart_argument
   @base.require_csrf_token
   @base.sanitize
   @base.require_priv(builtin.PRIV_USER_PROFILE)
@@ -416,7 +427,7 @@ class ContestDetailProblemSubmitHandler(ContestMixin, ContestPageCategoryMixin, 
   @base.require_perm(builtin.PERM_SUBMIT_PROBLEM)
   @base.limit_rate('add_record', 60, 100)
   async def post(self, *, ctype: str, tid: objectid.ObjectId, pid: document.convert_doc_id,
-                 lang: str, code: str):
+                 lang: str, code: objectid.ObjectId):
     doc_type = constant.contest.CTYPE_TO_DOCTYPE[ctype]
     # TODO(iceboy): rate limit base on ip.
     tdoc, pdoc = await asyncio.gather(contest.get(self.domain_id, doc_type, tid),
@@ -438,8 +449,10 @@ class ContestDetailProblemSubmitHandler(ContestMixin, ContestPageCategoryMixin, 
         raise error.InvalidArgumentError('ctype')
     if pid not in tdoc['pids']:
       raise error.ProblemNotFoundError(self.domain_id, pid, tdoc['doc_id'])
+    # TODO(tc-imba): only constant.record.CODE_TYPE_TAR is supported now
     rid = await record.add(self.domain_id, pdoc['doc_id'], constant.record.TYPE_SUBMISSION,
-                           self.user['_id'], lang, code, tid=tdoc['doc_id'], hidden=True)
+                           self.user['_id'], lang, code, tid=tdoc['doc_id'], hidden=True,
+                           code_type=constant.record.CODE_TYPE_TAR)
     await contest.update_status(self.domain_id, tdoc['doc_id'], self.user['_id'],
                                 rid, pdoc['doc_id'], False, 0)
     if not self.can_show_record(tdoc):
@@ -452,17 +465,17 @@ class ContestDetailProblemSubmitHandler(ContestMixin, ContestPageCategoryMixin, 
 class ContestScoreboardHandler(ContestMixin, ContestPageCategoryMixin, base.Handler):
   @base.route_argument
   @base.sanitize
-  @base.require_perm(builtin.PERM_VIEW_CONTEST,            when=lambda ctype, **kwargs: ctype == 'contest')
+  @base.require_perm(builtin.PERM_VIEW_CONTEST, when=lambda ctype, **kwargs: ctype == 'contest')
   @base.require_perm(builtin.PERM_VIEW_CONTEST_SCOREBOARD, when=lambda ctype, **kwargs: ctype == 'contest')
-  @base.require_perm(builtin.PERM_VIEW_HOMEWORK,            when=lambda ctype, **kwargs: ctype == 'homework')
+  @base.require_perm(builtin.PERM_VIEW_HOMEWORK, when=lambda ctype, **kwargs: ctype == 'homework')
   @base.require_perm(builtin.PERM_VIEW_HOMEWORK_SCOREBOARD, when=lambda ctype, **kwargs: ctype == 'homework')
   async def get(self, *, ctype: str, tid: objectid.ObjectId):
     tdoc, rows = await self.get_scoreboard(constant.contest.CTYPE_TO_DOCTYPE[ctype], tid)
     page_title = self.translate('page.contest_scoreboard.{0}.title'.format(ctype))
     path_components = self.build_path(
-        (self.translate('page.contest_main.{0}.title'.format(ctype)), self.reverse_url('contest_main', ctype=ctype)),
-        (tdoc['title'], self.reverse_url('contest_detail', ctype=ctype, tid=tdoc['doc_id'])),
-        (page_title, None))
+      (self.translate('page.contest_main.{0}.title'.format(ctype)), self.reverse_url('contest_main', ctype=ctype)),
+      (tdoc['title'], self.reverse_url('contest_detail', ctype=ctype, tid=tdoc['doc_id'])),
+      (page_title, None))
     self.render('contest_scoreboard.html', tdoc=tdoc, rows=rows,
                 page_title=page_title, path_components=path_components)
 
@@ -482,9 +495,9 @@ class ContestScoreboardDownloadHandler(ContestMixin, base.Handler):
   @base.require_perm(builtin.PERM_VIEW_CONTEST_SCOREBOARD)
   @base.route_argument
   @base.sanitize
-  @base.require_perm(builtin.PERM_VIEW_CONTEST,            when=lambda ctype, **kwargs: ctype == 'contest')
+  @base.require_perm(builtin.PERM_VIEW_CONTEST, when=lambda ctype, **kwargs: ctype == 'contest')
   @base.require_perm(builtin.PERM_VIEW_CONTEST_SCOREBOARD, when=lambda ctype, **kwargs: ctype == 'contest')
-  @base.require_perm(builtin.PERM_VIEW_HOMEWORK,            when=lambda ctype, **kwargs: ctype == 'homework')
+  @base.require_perm(builtin.PERM_VIEW_HOMEWORK, when=lambda ctype, **kwargs: ctype == 'homework')
   @base.require_perm(builtin.PERM_VIEW_HOMEWORK_SCOREBOARD, when=lambda ctype, **kwargs: ctype == 'homework')
   async def get(self, *, ctype: str, tid: objectid.ObjectId, ext: str):
     get_status_content = {
@@ -510,7 +523,6 @@ class ContestCreateHandler(ContestMixin, ContestPageCategoryMixin, base.Handler)
     else:
       raise error.InvalidArgumentError('ctype')
 
-
   @base.require_priv(builtin.PRIV_USER_PROFILE)
   @base.require_perm(builtin.PERM_CREATE_CONTEST)
   async def _get_contest(self):
@@ -526,7 +538,6 @@ class ContestCreateHandler(ContestMixin, ContestPageCategoryMixin, base.Handler)
                 time_text=dt.strftime('%H:%M'),
                 pids=_format_pids([1000, 1001]),
                 page_title=page_title, path_components=path_components)
-
 
   @base.require_priv(builtin.PRIV_USER_PROFILE)
   @base.require_perm(builtin.PERM_CREATE_HOMEWORK)
@@ -544,7 +555,6 @@ class ContestCreateHandler(ContestMixin, ContestPageCategoryMixin, base.Handler)
                 extension_days='1',
                 page_title=page_title, path_components=path_components)
 
-
   @base.route_argument
   async def post(self, *, ctype: str, **kwargs):
     if ctype == 'homework':
@@ -553,7 +563,6 @@ class ContestCreateHandler(ContestMixin, ContestPageCategoryMixin, base.Handler)
       await self._post_contest()
     else:
       raise error.InvalidArgumentError('ctype')
-
 
   @base.require_priv(builtin.PRIV_USER_PROFILE)
   @base.require_perm(builtin.PERM_EDIT_PROBLEM)
@@ -579,7 +588,6 @@ class ContestCreateHandler(ContestMixin, ContestPageCategoryMixin, base.Handler)
                             rule, begin_at, end_at, pids)
     await self.hide_problems(pids)
     self.json_or_redirect(self.reverse_url('contest_detail', ctype='contest', tid=tid))
-
 
   @base.require_priv(builtin.PRIV_USER_PROFILE)
   @base.require_perm(builtin.PERM_EDIT_PROBLEM)
@@ -629,7 +637,6 @@ class ContestEditHandler(ContestMixin, ContestPageCategoryMixin, base.Handler):
     else:
       raise error.InvalidArgumentError('ctype')
 
-
   @base.require_priv(builtin.PRIV_USER_PROFILE)
   @base.sanitize
   async def _get_contest(self, *, tid: objectid.ObjectId):
@@ -640,16 +647,15 @@ class ContestEditHandler(ContestMixin, ContestPageCategoryMixin, base.Handler):
     duration = (tdoc['end_at'] - tdoc['begin_at']).total_seconds() / 3600
     page_title = self.translate('page.contest_edit.contest.title')
     path_components = self.build_path(
-        (self.translate('page.contest_main.contest.title'), self.reverse_url('contest_main', ctype='contest')),
-        (tdoc['title'], self.reverse_url('contest_detail', ctype='contest', tid=tdoc['doc_id'])),
-        (page_title, None))
+      (self.translate('page.contest_main.contest.title'), self.reverse_url('contest_main', ctype='contest')),
+      (tdoc['title'], self.reverse_url('contest_detail', ctype='contest', tid=tdoc['doc_id'])),
+      (page_title, None))
     self.render('contest_edit.html', tdoc=tdoc,
                 date_text=dt.strftime('%Y-%m-%d'),
                 time_text=dt.strftime('%H:%M'),
                 duration=duration,
                 pids=_format_pids(tdoc['pids']),
                 page_title=page_title, path_components=path_components)
-
 
   @base.require_priv(builtin.PRIV_USER_PROFILE)
   @base.sanitize
@@ -663,9 +669,9 @@ class ContestEditHandler(ContestMixin, ContestPageCategoryMixin, base.Handler):
     extension_days = round((end_at - penalty_since).total_seconds() / 60 / 60 / 24, ndigits=2)
     page_title = self.translate('page.contest_create.homework.title')
     path_components = self.build_path(
-        (self.translate('page.contest_main.homework.title'), self.reverse_url('contest_main', ctype='homework')),
-        (tdoc['title'], self.reverse_url('contest_detail', ctype='homework', tid=tdoc['doc_id'])),
-        (page_title, None))
+      (self.translate('page.contest_main.homework.title'), self.reverse_url('contest_main', ctype='homework')),
+      (tdoc['title'], self.reverse_url('contest_detail', ctype='homework', tid=tdoc['doc_id'])),
+      (page_title, None))
     self.render('homework_edit.html', tdoc=tdoc,
                 date_begin_text=begin_at.strftime('%Y-%m-%d'),
                 time_begin_text=begin_at.strftime('%H:%M'),
@@ -676,7 +682,6 @@ class ContestEditHandler(ContestMixin, ContestPageCategoryMixin, base.Handler):
                 pids=_format_pids(tdoc['pids']),
                 page_title=page_title, path_components=path_components)
 
-
   @base.route_argument
   async def post(self, *, ctype: str, **kwargs):
     if ctype == 'homework':
@@ -686,7 +691,6 @@ class ContestEditHandler(ContestMixin, ContestPageCategoryMixin, base.Handler):
     else:
       raise error.InvalidArgumentError('ctype')
 
-
   @base.require_priv(builtin.PRIV_USER_PROFILE)
   @base.require_perm(builtin.PERM_EDIT_PROBLEM)
   @base.route_argument
@@ -694,7 +698,7 @@ class ContestEditHandler(ContestMixin, ContestPageCategoryMixin, base.Handler):
   @base.require_csrf_token
   @base.sanitize
   async def _post_contest(self, *, ctype: str, tid: objectid.ObjectId, title: str, content: str, rule: int,
-                          begin_at_date: str=None, begin_at_time: str=None, duration: float,
+                          begin_at_date: str = None, begin_at_time: str = None, duration: float,
                           pids: str):
     tdoc = await contest.get(self.domain_id, document.TYPE_CONTEST, tid)
     if not self.own(tdoc, builtin.PERM_EDIT_CONTEST_SELF):
@@ -718,7 +722,6 @@ class ContestEditHandler(ContestMixin, ContestPageCategoryMixin, base.Handler):
         or tdoc['rule'] != rule:
       await contest.recalc_status(self.domain_id, document.TYPE_CONTEST, tdoc['doc_id'])
     self.json_or_redirect(self.reverse_url('contest_detail', ctype='contest', tid=tdoc['doc_id']))
-
 
   @base.require_priv(builtin.PRIV_USER_PROFILE)
   @base.require_perm(builtin.PERM_EDIT_PROBLEM)
