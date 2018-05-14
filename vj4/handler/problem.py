@@ -212,8 +212,8 @@ class ProblemSubmitHandler(base.Handler):
     extension = os.path.splitext(filename)[1].lower()
     if extension == '.tar':
       return 'application/x-tar'
-    elif extension == '.tar.gz':
-      return 'application/x-compressed-tar'
+    # elif extension == '.tar.gz':
+    #   return 'application/x-compressed-tar'
     raise error.FileTypeNotAllowedError(filename)
 
   @base.require_perm(builtin.PERM_SUBMIT_PROBLEM)
