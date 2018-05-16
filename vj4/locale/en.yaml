@@ -53,6 +53,7 @@ perm_record: Records
 perm_problem_solution: Problem Solutions
 perm_discussion: Discussions
 perm_contest: Contests
+perm_homework: Homeworks
 perm_training: Trainings
 discussion_edit: Discussion Edit
 wiki_help: Help
@@ -80,3 +81,11 @@ page.contest_detail.homework.info.problems: Problems
 page.contest_detail.homework.info.open_since: Open Since
 page.contest_detail.homework.info.deadline: DDL
 page.contest_detail.homework.info.extension: Extension
+page.contest_create.contest.title: Create Contest
+page.contest_create.homework.title: Create Homework
+page.contest_scoreboard.contest.title: Contest Scoreboard
+page.contest_scoreboard.homework.title: Homework Scoreboard
+page.contest_edit.contest.title: Edit Contest
+page.contest_edit.homework.title: Edit Homework
+page.contest_detail_problem_submit.contest.title: Contest Submission
+page.contest_detail_problem_submit.homework.title: Homework Submission

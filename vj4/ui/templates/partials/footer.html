@@ -1,6 +1,6 @@
 <div class="footer">
   <div class="row"><div class="columns">
-  {% if show_topics|default(true) %}
+  {% if show_topics|default(false) %}
     <div class="row footer__links">
       <div class="medium-3 large-2 columns footer__category expandable">
         <h1>
@@ -47,11 +47,11 @@
     <div class="footer__extra-link clearfix">
       <div class="footer__extra-left">
         <ol class="clearfix">
-          <li class="footer__extra-link-item"><a href="//vijos.github.io/about-vijos/about/about-vijos/">{{ _('About') }}</a></li>
-          <li class="footer__extra-link-item"><a href="//vijos.github.io/about-vijos/about/contact-us/">{{ _('Contact Us') }}</a></li>
-          <li class="footer__extra-link-item"><a href="//vijos.github.io/about-vijos/about/privacy-policy/">{{ _('Privacy') }}</a></li>
-          <li class="footer__extra-link-item"><a href="//vijos.github.io/about-vijos/about/terms-of-service/">{{ _('Terms of Service') }}</a></li>
-          <li class="footer__extra-link-item"><a href="//vijos.github.io/about-vijos/about/copyright-complaint/">{{ _('Copyright Complaint') }}</a></li>
+{#          <li class="footer__extra-link-item"><a href="//vijos.github.io/about-vijos/about/about-vijos/">{{ _('About') }}</a></li>#}
+{#          <li class="footer__extra-link-item"><a href="//vijos.github.io/about-vijos/about/contact-us/">{{ _('Contact Us') }}</a></li>#}
+{#          <li class="footer__extra-link-item"><a href="//vijos.github.io/about-vijos/about/privacy-policy/">{{ _('Privacy') }}</a></li>#}
+{#          <li class="footer__extra-link-item"><a href="//vijos.github.io/about-vijos/about/terms-of-service/">{{ _('Terms of Service') }}</a></li>#}
+{#          <li class="footer__extra-link-item"><a href="//vijos.github.io/about-vijos/about/copyright-complaint/">{{ _('Copyright Complaint') }}</a></li>#}
           <li class="footer__extra-link-item" data-dropdown-target="#menu-footer-lang">
             <span><span class="icon icon-global"></span> Language <span class="icon icon-expand_less"></span></span>
             <ol class="dropdown-target menu" id="menu-footer-lang">
