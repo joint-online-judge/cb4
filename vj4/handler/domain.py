@@ -22,51 +22,66 @@ from vj4.util import validator
 @app.route('/', 'domain_main')
 class DomainMainHandler(training_handler.TrainingStatusMixin, base.Handler):
   CONTESTS_ON_MAIN = 5
+  HOMEWORKS_ON_MAIN = 5
   TRAININGS_ON_MAIN = 5
   DISCUSSIONS_ON_MAIN = 20
 
   async def prepare_contest(self):
     if self.has_perm(builtin.PERM_VIEW_CONTEST):
-      tdocs = await contest.get_multi(self.domain_id, document.TYPE_CONTEST) \
+      docs = await contest.get_multi(self.domain_id, document.TYPE_CONTEST) \
                            .limit(self.CONTESTS_ON_MAIN) \
                            .to_list()
-      tsdict = await contest.get_dict_status(self.domain_id, self.user['_id'],
-                                             (tdoc['doc_id'] for tdoc in tdocs))
+      dict = await contest.get_dict_status(self.domain_id, self.user['_id'],
+                                             (doc['doc_id'] for doc in docs))
     else:
-      tdocs = []
-      tsdict = {}
-    return tdocs, tsdict
+      docs = []
+      dict = {}
+    return docs, dict
+
+  async def prepare_homework(self):
+    if self.has_perm(builtin.PERM_VIEW_HOMEWORK):
+      docs = await contest.get_multi(self.domain_id, document.TYPE_HOMEWORK) \
+                           .limit(self.HOMEWORKS_ON_MAIN) \
+                           .to_list()
+      dict = await contest.get_dict_status(self.domain_id, self.user['_id'],
+                                             (doc['doc_id'] for doc in docs))
+    else:
+      docs = []
+      dict = {}
+    return docs, dict
 
   async def prepare_training(self):
     if self.has_perm(builtin.PERM_VIEW_TRAINING):
-      tdocs = await training.get_multi(self.domain_id) \
+      docs = await training.get_multi(self.domain_id) \
                             .sort('doc_id', 1) \
                             .limit(self.TRAININGS_ON_MAIN) \
                             .to_list()
-      tsdict = await training.get_dict_status(self.domain_id, self.user['_id'],
-                                              (tdoc['doc_id'] for tdoc in tdocs))
+      dict = await training.get_dict_status(self.domain_id, self.user['_id'],
+                                              (doc['doc_id'] for doc in docs))
     else:
-      tdocs = []
-      tsdict = {}
-    return tdocs, tsdict
+      docs = []
+      dict = {}
+    return docs, dict
 
   async def prepare_discussion(self):
     if self.has_perm(builtin.PERM_VIEW_DISCUSSION):
-      ddocs = await discussion.get_multi(self.domain_id) \
+      docs = await discussion.get_multi(self.domain_id) \
                               .limit(self.DISCUSSIONS_ON_MAIN) \
                               .to_list()
-      vndict = await discussion.get_dict_vnodes(self.domain_id, map(discussion.node_id, ddocs))
+      dict = await discussion.get_dict_vnodes(self.domain_id, map(discussion.node_id, docs))
     else:
-      ddocs = []
-      vndict = {}
-    return ddocs, vndict
+      docs = []
+      dict = {}
+    return docs, dict
 
   async def get(self):
-    (tdocs, tsdict), (trdocs, trsdict), (ddocs, vndict) = await asyncio.gather(
-        self.prepare_contest(), self.prepare_training(), self.prepare_discussion())
+    (tdocs, tsdict), (hwdocs, hwdict), (trdocs, trsdict), (ddocs, vndict) = await asyncio.gather(
+        self.prepare_contest(), self.prepare_homework(), self.prepare_training(), self.prepare_discussion())
     udict = await user.get_dict(ddoc['owner_uid'] for ddoc in ddocs)
     self.render('domain_main.html', discussion_nodes=await discussion.get_nodes(self.domain_id),
-                tdocs=tdocs, tsdict=tsdict, trdocs=trdocs, trsdict=trsdict,
+                tdocs=tdocs, tsdict=tsdict,
+                hwdocs=hwdocs, hwdict=hwdict,
+                trdocs=trdocs, trsdict=trsdict,
                 ddocs=ddocs, vndict=vndict,
                 udict=udict, datetime_stamp=self.datetime_stamp)
 
