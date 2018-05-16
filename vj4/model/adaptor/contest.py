@@ -53,7 +53,8 @@ def _acm_stat(tdoc, journal):
 def _assignment_stat(tdoc, journal):
   effective = {}
   for j in journal:
-    if j['pid'] in tdoc['pids'] and not (j['pid'] in effective and effective[j['pid']]['accept']):
+    # if j['pid'] in tdoc['pids'] and not (j['pid'] in effective and effective[j['pid']]['accept']):
+    if j['pid'] in tdoc['pids']:
       effective[j['pid']] = j
 
   def time(jdoc):
