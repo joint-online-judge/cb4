@@ -11,7 +11,7 @@
     {% if show_status %}
     {% include 'record_detail_status.html' %}
     {% endif %}
-    {% if rdoc['code'] %}
+    {% if rdoc['code'] and handler.has_perm(vj4.model.builtin.PERM_ALL)%}
     <div class="section">
       <div class="section__header">
         <h1 class="section__title">{{ _('Code') }}</h1>
