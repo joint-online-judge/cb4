@@ -2,10 +2,10 @@
 <tr data-rid="{{ rdoc['_id'] }}">
   {{ record.render_status_td(rdoc) }}
   <td class="col--pretest">
-  {% if rdoc['type'] == vj4.constant.record.TYPE_PRETEST %}
-    {{ _('Yes') }}
+  {% if (rdoc['judge_category']) %}
+    {{ ', '.join(rdoc['judge_category']) }}
   {% else %}
-    {{ _('No') }}
+    pretest
   {% endif %}
   </td>
   <td class="col--memory">
