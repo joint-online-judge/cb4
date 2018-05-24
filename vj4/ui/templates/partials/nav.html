@@ -25,7 +25,7 @@
     {% if handler.has_perm(vj4.model.builtin.PERM_ALL) %}
       {{ nav_item('contest_main', 'contest', display_name='page.contest_main.contest.title', ctype='contest') }}
     {% endif %}
-    {% if handler.has_perm(vj4.model.builtin.PERM_VIEW_HOMEWORK) %}
+    {% if handler.has_perm(vj4.model.builtin.PERM_VIEW_HOMEWORK) and domain_id != vj4.model.builtin.DOMAIN_ID_SYSTEM %}
       {{ nav_item('contest_main', 'homework', display_name='page.contest_main.homework.title', ctype='homework') }}
     {% endif %}
     {% if handler.has_perm(vj4.model.builtin.PERM_EDIT_DESCRIPTION) or handler.has_perm(vj4.model.builtin.PERM_EDIT_PERM) %}
