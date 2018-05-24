@@ -491,9 +491,5 @@ DEFAULT_VNODES = collections.OrderedDict([
   ('Problem', [
     {'pic': None, 'name': 'Share'},
     {'pic': None, 'name': 'Solution'}
-  ]),
-  ('Playground', [
-    {'pic': None, 'name': 'Maelstrom'},
-    {'pic': None, 'name': 'Pigeonhole'}
   ])
 ])
