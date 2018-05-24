@@ -485,11 +485,22 @@ VNODE_MISSING = {'title': '(missing)'}
 DEFAULT_VNODES = collections.OrderedDict([
   ('JOJ', [
     {'pic': None, 'name': 'Announcement'},
-    {'pic': None, 'name': 'Q&A'},
+    {'pic': None, 'name': 'Issue'},
     {'pic': None, 'name': 'Suggestion'}
   ]),
-  ('Problem', [
-    {'pic': None, 'name': 'Share'},
+  ('Playground', [
+    {'pic': None, 'name': 'Maelstrom'},
+    {'pic': None, 'name': 'Pigeonhole'}
+  ])
+])
+DOMAIN_VNODES = collections.OrderedDict([
+  ('Course', [
+    {'pic': None, 'name': 'Announcement'},
+    {'pic': None, 'name': 'Q&A'},
+  ]),
+  ('Homework', [
+    {'pic': None, 'name': 'Question'},
     {'pic': None, 'name': 'Solution'}
   ])
 ])
+

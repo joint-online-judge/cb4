@@ -32,7 +32,10 @@ async def is_initialized(domain_id: str):
 
 @argmethod.wrap
 async def initialize(domain_id: str):
-  await _update_nodes(domain_id, builtin.DEFAULT_VNODES)
+  if domain_id == builtin.DOMAIN_ID_SYSTEM:
+    await _update_nodes(domain_id, builtin.DEFAULT_VNODES)
+  else:
+    await _update_nodes(domain_id, builtin.DOMAIN_VNODES)
 
 
 @argmethod.wrap
