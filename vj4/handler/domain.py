@@ -26,6 +26,20 @@ class DomainMainHandler(training_handler.TrainingStatusMixin, base.Handler):
   TRAININGS_ON_MAIN = 5
   DISCUSSIONS_ON_MAIN = 20
 
+  async def prepare_domain(self):
+    dudict = await domain.get_dict_user_by_domain_id(self.user['_id'])
+    dids = list(dudict.keys())
+    # dodocs = await domain.get_multi(_id={'$in': dids}).to_list()
+    dodocs = await domain.get_multi().to_list()
+    can_manage = {}
+    for dodoc in builtin.DOMAINS + dodocs:
+      role = dudict.get(dodoc['_id'], {}).get('role', builtin.ROLE_DEFAULT)
+      mask = domain.get_all_roles(dodoc).get(role, builtin.PERM_NONE)
+      can_manage[dodoc['_id']] = (
+          ((builtin.PERM_EDIT_DESCRIPTION | builtin.PERM_EDIT_PERM) & mask) != 0
+          or self.has_priv(builtin.PRIV_MANAGE_ALL_DOMAIN))
+    return dodocs, dudict, can_manage
+
   async def prepare_contest(self):
     if self.has_perm(builtin.PERM_VIEW_CONTEST):
       docs = await contest.get_multi(self.domain_id, document.TYPE_CONTEST) \
@@ -75,10 +89,18 @@ class DomainMainHandler(training_handler.TrainingStatusMixin, base.Handler):
     return docs, dict
 
   async def get(self):
-    (tdocs, tsdict), (hwdocs, hwdict), (trdocs, trsdict), (ddocs, vndict) = await asyncio.gather(
-        self.prepare_contest(), self.prepare_homework(), self.prepare_training(), self.prepare_discussion())
+    (dodocs, dudict, can_manage), (tdocs, tsdict), (hwdocs, hwdict), (trdocs, trsdict), (ddocs, vndict) \
+          = await asyncio.gather(
+            self.prepare_domain(),
+            self.prepare_contest(),
+            self.prepare_homework(),
+            self.prepare_training(),
+            self.prepare_discussion())
     udict = await user.get_dict(ddoc['owner_uid'] for ddoc in ddocs)
-    self.render('domain_main.html', discussion_nodes=await discussion.get_nodes(self.domain_id),
+    self.render('domain_main.html',
+                discussion_nodes=await discussion.get_nodes(self.domain_id),
+                can_manage=can_manage,
+                dodocs=dodocs, dudict=dudict,
                 tdocs=tdocs, tsdict=tsdict,
                 hwdocs=hwdocs, hwdict=hwdict,
                 trdocs=trdocs, trsdict=trsdict,
