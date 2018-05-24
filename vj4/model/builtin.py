@@ -483,15 +483,24 @@ for category, sub_categories in PROBLEM_CATEGORIES.items():
 
 VNODE_MISSING = {'title': '(missing)'}
 DEFAULT_VNODES = collections.OrderedDict([
-  ('探索', [
-    {'pic': 'qa', 'name': '问答'},
-    {'pic': 'share', 'name': '分享'},
-    {'pic': 'solution', 'name': '题解'}
+  ('JOJ', [
+    {'pic': None, 'name': 'Announcement'},
+    {'pic': None, 'name': 'Issue'},
+    {'pic': None, 'name': 'Suggestion'}
   ]),
-  ('Vijos', [
-    {'pic': 'vijos', 'name': 'Vijos'},
-    {'pic': None, 'name': '团队'},
-    {'pic': None, 'name': '月赛'},
-    {'pic': 'advice', 'name': '建议'}
+  ('Playground', [
+    {'pic': None, 'name': 'Maelstrom'},
+    {'pic': None, 'name': 'Pigeonhole'}
   ])
 ])
+DOMAIN_VNODES = collections.OrderedDict([
+  ('Course', [
+    {'pic': None, 'name': 'Announcement'},
+    {'pic': None, 'name': 'Q&A'},
+  ]),
+  ('Homework', [
+    {'pic': None, 'name': 'Question'},
+    {'pic': None, 'name': 'Solution'}
+  ])
+])
+

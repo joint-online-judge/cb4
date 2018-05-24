@@ -4,7 +4,7 @@
     <a class="header__logo" href="{{ reverse_url('domain_main', domain_id=vj4.model.builtin.DOMAIN_ID_SYSTEM) }}" target="_self"></a>
   {% else %}
     <div class="header__logo--domain"><a href="{{ reverse_url('domain_main') }}" target="_self">{{ domain['name'] }}</a></div>
-    <div class="header__logo--system"><a href="{{ reverse_url('domain_main', domain_id=vj4.model.builtin.DOMAIN_ID_SYSTEM) }}" target="_blank">Powered by Vijos</a></div>
+    <div class="header__logo--system"><a href="{{ reverse_url('domain_main', domain_id=vj4.model.builtin.DOMAIN_ID_SYSTEM) }}" target="_blank">Powered by JOJ</a></div>
   {% endif %}
   </div></div></div>
   {% include "partials/path.html" %}

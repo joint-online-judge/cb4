@@ -203,7 +203,7 @@ def _assignment_scoreboard(is_export, _, tdoc, ranked_tsdocs, udict, pdict):
     row = []
     row.append({'type': 'string', 'value': rank})
     row.append({'type': 'user',
-                'value': udict[tsdoc['uid']]['uname'], 'raw': udict[tsdoc['uid']]})
+                'value': udict[tsdoc['uid']]['realname'], 'raw': udict[tsdoc['uid']]})
     row.append({'type': 'string',
                 'value': tsdoc.get('penalty_score', 0)})
     if is_export:
