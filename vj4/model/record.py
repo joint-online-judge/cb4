@@ -20,8 +20,9 @@ PROJECTION_ALL = None
 
 @argmethod.wrap
 async def add(domain_id: str, pid: document.convert_doc_id, type: int, uid: int, lang: str,
-              code: Union[str, objectid.ObjectId], data_id: objectid.ObjectId=None,
-              tid: objectid.ObjectId=None, hidden=False, code_type=constant.record.CODE_TYPE_TEXT):
+              code: Union[str, objectid.ObjectId], data_id: objectid.ObjectId = None,
+              tid: objectid.ObjectId = None, hidden=False,
+              code_type=constant.record.CODE_TYPE_TEXT, judge_category=[]):
   validator.check_lang(lang)
   coll = db.coll('record')
   doc = {'hidden': hidden,
@@ -37,7 +38,8 @@ async def add(domain_id: str, pid: document.convert_doc_id, type: int, uid: int,
          'code': code,
          'tid': tid,
          'data_id': data_id,
-         'type': type}
+         'type': type,
+         'judge_category': judge_category}
   rid = (await coll.insert_one(doc)).inserted_id
   bus.publish_throttle('record_change', doc, rid)
   post_coros = [queue.publish('judge', rid=rid)]
@@ -56,7 +58,7 @@ async def get(record_id: objectid.ObjectId, fields=PROJECTION_ALL):
 
 
 @argmethod.wrap
-async def rejudge(record_id: objectid.ObjectId, enqueue: bool=True):
+async def rejudge(record_id: objectid.ObjectId, enqueue: bool = True):
   coll = db.coll('record')
   doc = await coll.find_one_and_update(filter={'_id': record_id},
                                        update={'$unset': {'judge_uid': '',
@@ -77,7 +79,7 @@ async def rejudge(record_id: objectid.ObjectId, enqueue: bool=True):
 
 
 @argmethod.wrap
-def get_all_multi(end_id: objectid.ObjectId=None, get_hidden: bool=False, *, fields=None,
+def get_all_multi(end_id: objectid.ObjectId = None, get_hidden: bool = False, *, fields=None,
                   **kwargs):
   coll = db.coll('record')
   query = {**kwargs, 'hidden': False if not get_hidden else {'$gte': False}}
@@ -87,14 +89,14 @@ def get_all_multi(end_id: objectid.ObjectId=None, get_hidden: bool=False, *, fie
 
 
 @argmethod.wrap
-def get_multi(get_hidden: bool=False, fields=None, **kwargs):
+def get_multi(get_hidden: bool = False, fields=None, **kwargs):
   coll = db.coll('record')
   kwargs['hidden'] = False if not get_hidden else {'$gte': False}
   return coll.find(kwargs, projection=fields)
 
 
 @argmethod.wrap
-async def get_count(begin_id: objectid.ObjectId=None):
+async def get_count(begin_id: objectid.ObjectId = None):
   coll = db.coll('record')
   query = {}
   if begin_id:
@@ -104,7 +106,7 @@ async def get_count(begin_id: objectid.ObjectId=None):
 
 @argmethod.wrap
 def get_problem_multi(domain_id: str, pid: document.convert_doc_id,
-                      get_hidden: bool=False, type: int=None, *, fields=None):
+                      get_hidden: bool = False, type: int = None, *, fields=None):
   coll = db.coll('record')
   query = {'hidden': False if not get_hidden else {'$gte': False},
            'domain_id': domain_id, 'pid': pid}
@@ -115,7 +117,7 @@ def get_problem_multi(domain_id: str, pid: document.convert_doc_id,
 
 @argmethod.wrap
 def get_user_in_problem_multi(uid: int, domain_id: str, pid: document.convert_doc_id,
-                              get_hidden: bool=False, type: int=None, *, fields=None):
+                              get_hidden: bool = False, type: int = None, *, fields=None):
   coll = db.coll('record')
   query = {'hidden': False if not get_hidden else {'$gte': False},
            'domain_id': domain_id, 'pid': pid, 'uid': uid}
