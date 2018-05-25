@@ -312,7 +312,7 @@ class DomainPermissionHandler(base.Handler):
     self.render('domain_manage_permission.html', bitand=bitand, roles=roles)
 
   @base.require_perm(builtin.PERM_EDIT_PERM)
-  @base.post_argument
+  @base.multi_post_argument
   @base.require_csrf_token
   async def post(self, **kwargs):
     roles = dict()

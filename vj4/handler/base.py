@@ -458,6 +458,14 @@ def post_argument(coro):
   return wrapped
 
 
+def multi_post_argument(coro):
+  @functools.wraps(coro)
+  async def wrapped(self, **kwargs):
+    return await coro(self, **kwargs, **dict(await self.request.post()))
+
+  return wrapped
+
+
 def multipart_argument(coro):
   @functools.wraps(coro)
   async def wrapped(self, **kwargs):
