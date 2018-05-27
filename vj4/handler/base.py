@@ -510,12 +510,13 @@ def limit_rate(op, period_secs, max_operations):
   return decorate
 
 
-def limit_rate_hour_per_user(op, period_hours, max_operations):
+def limit_rate_user(op, period_hours, max_operations):
   def decorate(coro):
     @functools.wraps(coro)
     async def wrapped(self, **kwargs):
       if not self.has_priv(builtin.PRIV_ALL):
-        await opcount.inc(op, self.user['_id'], period_hours*3600, max_operations)
+        await opcount.inc(op, str(self.user['_id']) + str(kwargs['tid']) + str(kwargs['pid']),
+                          period_hours*3600, max_operations)
       return await coro(self, **kwargs)
 
     return wrapped
