@@ -82,7 +82,7 @@ class JudgeNoopHandler(base.Handler):
 class JudgeDataListHandler(base.Handler):
   @base.get_argument
   @base.sanitize
-  async def get(self, last: int=0):
+  async def get(self, last: int = 0):
     # TODO(iceboy): This function looks strange.
     # Judge will have PRIV_READ_PROBLEM_DATA,
     # domain administrator will have PERM_READ_PROBLEM_DATA.
@@ -103,7 +103,7 @@ class JudgeScoreHandler(base.Handler):
   @base.post_argument
   @base.require_csrf_token
   @base.sanitize
-  async def post(self, *, rid: objectid.ObjectId, score: int, message: str=''):
+  async def post(self, *, rid: objectid.ObjectId, score: int, message: str = ''):
     rdoc = await record.get(rid)
     if rdoc['domain_id'] == self.domain_id:
       self.check_perm(builtin.PERM_REJUDGE)
@@ -114,7 +114,7 @@ class JudgeScoreHandler(base.Handler):
                              constant.record.STATUS_FETCHED)
     update = {'$set': {}, '$push': {}}
     update['$set']['status'] = constant.record.STATUS_ACCEPTED if score == 100 \
-                               else constant.record.STATUS_WRONG_ANSWER
+      else constant.record.STATUS_WRONG_ANSWER
     update['$push']['cases'] = {
       'status': update['$set']['status'],
       'score': score,

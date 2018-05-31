@@ -426,6 +426,7 @@ class ContestDetailProblemSubmitHandler(ContestMixin, ContestPageCategoryMixin, 
   @base.require_perm(builtin.PERM_VIEW_HOMEWORK, when=lambda ctype, **kwargs: ctype == 'homework')
   @base.require_perm(builtin.PERM_SUBMIT_PROBLEM)
   @base.limit_rate('add_record', 60, 100)
+  @base.limit_rate_user('add_record', 24, 3)
   async def post(self, *, ctype: str, tid: objectid.ObjectId, pid: document.convert_doc_id,
                  lang: str, code: objectid.ObjectId):
     doc_type = constant.contest.CTYPE_TO_DOCTYPE[ctype]
