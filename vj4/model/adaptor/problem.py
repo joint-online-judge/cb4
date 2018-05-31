@@ -39,9 +39,10 @@ async def add(domain_id: str, title: str, content: str, owner_uid: int,
               category: list=[], hidden: bool=False):
   validator.check_title(title)
   validator.check_content(content)
+  # tc-imba: use cc as the default language
   pid = await document.add(domain_id, content, owner_uid, document.TYPE_PROBLEM,
                            pid, title=title, data=data, category=category,
-                           hidden=hidden, num_submit=0, num_accept=0, languages=[])
+                           hidden=hidden, num_submit=0, num_accept=0, languages=['cc'])
   await domain.inc_user(domain_id, owner_uid, num_problems=1)
   return pid
 
