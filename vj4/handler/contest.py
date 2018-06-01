@@ -766,3 +766,59 @@ class ContestEditHandler(ContestMixin, ContestPageCategoryMixin, base.Handler):
         or set(tdoc['pids']) != set(pids):
       await contest.recalc_status(self.domain_id, document.TYPE_HOMEWORK, tdoc['doc_id'])
     self.json_or_redirect(self.reverse_url('contest_detail', ctype='homework', tid=tid))
+
+
+@app.route('/{ctype:contest|homework}/{tid}/sentence', 'contest_sentence')
+class ContestEditHandler(ContestMixin, ContestPageCategoryMixin, base.Handler):
+  @base.route_argument
+  async def get(self, *, ctype: str, **kwargs):
+    if ctype == 'homework':
+      await self._get_homework(**kwargs)
+    elif ctype == 'contest':
+      raise error.InvalidArgumentError('ctype')
+      # await self._get_contest(**kwargs)
+    else:
+      raise error.InvalidArgumentError('ctype')
+
+  @base.require_priv(builtin.PRIV_USER_PROFILE)
+  @base.sanitize
+  async def _get_homework(self, *, tid: objectid.ObjectId):
+    tdoc = await contest.get(self.domain_id, document.TYPE_HOMEWORK, tid)
+    if not self.own(tdoc, builtin.PERM_EDIT_HOMEWORK_SELF):
+      self.check_perm(builtin.PERM_EDIT_HOMEWORK)
+    page_title = self.translate('page.contest_sentence.homework.title')
+    path_components = self.build_path(
+      (self.translate('page.contest_main.homework.title'), self.reverse_url('contest_main', ctype='homework')),
+      (tdoc['title'], self.reverse_url('contest_detail', ctype='homework', tid=tdoc['doc_id'])),
+      (page_title, None))
+    self.render('homework_sentence.html', tdoc=tdoc,
+                page_title=page_title, path_components=path_components)
+
+  @base.route_argument
+  async def post(self, *, ctype: str, **kwargs):
+    if ctype == 'homework':
+      await self._post_homework()
+    elif ctype == 'contest':
+      raise error.InvalidArgumentError('ctype')
+      # await self._post_contest()
+    else:
+      raise error.InvalidArgumentError('ctype')
+
+  @base.require_priv(builtin.PRIV_USER_PROFILE)
+  @base.require_perm(builtin.PERM_EDIT_PROBLEM)
+  @base.route_argument
+  @base.post_argument
+  @base.require_csrf_token
+  @base.sanitize
+  async def _post_homework(self, *, ctype: str, tid: objectid.ObjectId, judge_category: str):
+    tdoc = await contest.get(self.domain_id, document.TYPE_HOMEWORK, tid)
+    if not self.own(tdoc, builtin.PERM_EDIT_HOMEWORK_SELF):
+      self.check_perm(builtin.PERM_EDIT_HOMEWORK)
+    doc_type = constant.contest.CTYPE_TO_DOCTYPE[ctype]
+    tdoc, tsdocs = await contest.get_and_list_status(self.domain_id, doc_type, tid)
+    udict, pdict = await asyncio.gather(user.get_dict([tsdoc['uid'] for tsdoc in tsdocs]),
+                                        problem.get_dict(self.domain_id, tdoc['pids']))
+    print(tdoc)
+    print(tsdocs)
+    print(tdoc['pids'])
+    self.json_or_redirect(self.reverse_url('contest_detail', ctype=ctype, tid=tid))
