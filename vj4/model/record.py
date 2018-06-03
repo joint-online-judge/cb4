@@ -50,6 +50,30 @@ async def add(domain_id: str, pid: document.convert_doc_id, type: int, uid: int,
   await asyncio.gather(*post_coros)
   return rid
 
+@argmethod.wrap
+async def sentence(rdoc, judge_category):
+  coll = db.coll('record')
+  doc = {'hidden': rdoc['hidden'],
+         'status': constant.record.STATUS_WAITING,
+         'score': 0,
+         'time_ms': 0,
+         'memory_kb': 0,
+         'domain_id': rdoc['domain_id'],
+         'pid': rdoc['pid'],
+         'uid': rdoc['uid'],
+         'lang': rdoc['lang'],
+         'code_type': rdoc['code_type'],
+         'code': rdoc['code'],
+         'tid': rdoc['tid'],
+         'data_id': rdoc['data_id'],
+         'type': rdoc['type'],
+         'judge_category': judge_category,
+         'submittedAt': rdoc['_id'].generation_time}
+  rid = (await coll.insert_one(doc)).inserted_id
+  bus.publish_throttle('record_change', doc, rid)
+  await queue.publish('judge', rid=rid)
+  return rid
+
 
 @argmethod.wrap
 async def get(record_id: objectid.ObjectId, fields=PROJECTION_ALL):

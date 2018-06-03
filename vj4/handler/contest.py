@@ -804,21 +804,39 @@ class ContestEditHandler(ContestMixin, ContestPageCategoryMixin, base.Handler):
     else:
       raise error.InvalidArgumentError('ctype')
 
+  def split_tags(self, s):
+    s = s.replace('，', ',')  # Chinese ', '
+    return sorted(list(filter(lambda _: _ != '', map(lambda _: _.strip(), s.split(',')))))
+
   @base.require_priv(builtin.PRIV_USER_PROFILE)
   @base.require_perm(builtin.PERM_EDIT_PROBLEM)
   @base.route_argument
   @base.post_argument
   @base.require_csrf_token
   @base.sanitize
-  async def _post_homework(self, *, ctype: str, tid: objectid.ObjectId, judge_category: str):
+  async def _post_homework(self, *, ctype: str, tid: objectid.ObjectId, judge_category: str, sentence_new: bool = False):
     tdoc = await contest.get(self.domain_id, document.TYPE_HOMEWORK, tid)
     if not self.own(tdoc, builtin.PERM_EDIT_HOMEWORK_SELF):
       self.check_perm(builtin.PERM_EDIT_HOMEWORK)
     doc_type = constant.contest.CTYPE_TO_DOCTYPE[ctype]
+    judge_category = self.split_tags(judge_category)
     tdoc, tsdocs = await contest.get_and_list_status(self.domain_id, doc_type, tid)
-    udict, pdict = await asyncio.gather(user.get_dict([tsdoc['uid'] for tsdoc in tsdocs]),
-                                        problem.get_dict(self.domain_id, tdoc['pids']))
-    print(tdoc)
-    print(tsdocs)
-    print(tdoc['pids'])
+
+    for tsdoc in tsdocs:
+      rids = list(map(lambda x: x['rid'], tsdoc['journal']))
+      rdocs = record.get_multi(get_hidden=True, _id={'$in': rids}).sort([('_id', -1)])
+
+      # find the newest record to be sentenced
+      async for rdoc in rdocs:
+        if sentence_new and sorted(rdoc['judge_category']) == judge_category:
+          # in sentence new mode, records with same judge_category are skipped
+          break
+        if len(rdoc['judge_category']) > 0:
+          # records with judge_category are not origin records
+          continue
+        rid = await record.sentence(rdoc, judge_category)
+        await contest.update_status(self.domain_id, rdoc['tid'], rdoc['uid'], rid, rdoc['pid'], False, 0)
+        break
+
+    # self.json_or_redirect(self.reverse_url('contest_sentence', ctype=ctype, tid=tid))
     self.json_or_redirect(self.reverse_url('contest_detail', ctype=ctype, tid=tid))

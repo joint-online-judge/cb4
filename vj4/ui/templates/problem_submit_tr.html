@@ -14,5 +14,5 @@
   <td class="col--time">
     {{ rdoc['time_ms'] }}ms
   </td>
-  <td class="col--submit-at">{{ datetime_span(rdoc['_id'].generation_time) }}</td>
+  <td class="col--submit-at">{{ datetime_span(rdoc['submittedAt'] or rdoc['_id'].generation_time) }}</td>
 </tr>
