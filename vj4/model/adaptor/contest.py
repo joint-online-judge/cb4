@@ -68,9 +68,8 @@ def _assignment_stat(tdoc, journal):
       return score
     coefficient = 1
     for p_time, p_coefficient in sorted(tdoc['penalty_rules'].items(), key=lambda x: int(x[0])):
-      if int(p_time) <= exceed_seconds:
+      if exceed_seconds <= int(p_time):
         coefficient = p_coefficient
-      else:
         break
     return score * coefficient
 
