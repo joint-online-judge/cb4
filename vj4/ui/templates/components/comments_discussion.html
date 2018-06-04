@@ -10,7 +10,7 @@
       <div class="clearfix">
         <div class="supplementary dczcomments__supplementary">
           {{ user.render_inline(udoc, dudict[udoc['_id']], avatar=false) }}
-          @ {{ datetime_span(rdoc['_id'].generation_time) }}
+          @ {{ datetime_span(rdoc['submit_time'] or rdoc['_id'].generation_time) }}
         </div>
         {{ comment_base.reply_operations(doc, rdoc) }}
       </div>

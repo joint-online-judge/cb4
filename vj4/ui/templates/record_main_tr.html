@@ -28,5 +28,5 @@
   <td class="col--time">{% if rdoc['status'] == vj4.constant.record.STATUS_TIME_LIMIT_EXCEEDED or rdoc['status'] == vj4.constant.record.STATUS_MEMORY_LIMIT_EXCEEDED or rdoc['status'] == vj4.constant.record.STATUS_OUTPUT_LIMIT_EXCEEDED %}&ge;{% endif %}{{ rdoc['time_ms'] }}ms</td>
   <td class="col--memory">{% if rdoc['status'] == vj4.constant.record.STATUS_TIME_LIMIT_EXCEEDED or rdoc['status'] == vj4.constant.record.STATUS_MEMORY_LIMIT_EXCEEDED or rdoc['status'] == vj4.constant.record.STATUS_OUTPUT_LIMIT_EXCEEDED %}&ge;{% endif %}{{ rdoc['memory_kb']|format_size(1024) }}</td>
   <td class="col--lang">{{ vj4.constant.language.LANG_TEXTS[rdoc['lang']] }}</td>
-  <td class="col--submit-at">{{ datetime_span(rdoc['_id'].generation_time) }}</td>
+  <td class="col--submit-at">{{ datetime_span(rdoc['submit_time'] or rdoc['_id'].generation_time) }}</td>
 </tr>

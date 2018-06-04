@@ -68,7 +68,7 @@ async def sentence(rdoc, judge_category):
          'data_id': rdoc['data_id'],
          'type': rdoc['type'],
          'judge_category': judge_category,
-         'submittedAt': rdoc['_id'].generation_time}
+         'submit_time': rdoc['_id'].generation_time}
   rid = (await coll.insert_one(doc)).inserted_id
   bus.publish_throttle('record_change', doc, rid)
   await queue.publish('judge', rid=rid)

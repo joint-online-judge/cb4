@@ -95,7 +95,7 @@
             {{ _('Submit At') }}
           </dt>
           <dd>
-            {{ datetime_span(rdoc['_id'].generation_time) }}
+            {{ datetime_span(rdoc['submit_time'] or rdoc['_id'].generation_time) }}
           </dd>
           {% if rdoc['judge_at'] %}
           <dt>{{ _('Judged At') }}</dt>
