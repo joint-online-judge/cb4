@@ -22,6 +22,7 @@
           </div></div>
           {{ form.form_text(columns=None, label='Problems', name='pids', value=pids) }}
           {{ form.form_textarea(columns=None, label='Content', name='content', value=tdoc['content']|default(''), markdown=True) }}
+          {{ form.form_checkbox(label='Show scoreboard', name='show_scoreboard', value=tdoc['show_scoreboard']) }}
           <div class="row"><div class="columns">
             <input type="hidden" name="csrf_token" value="{{ handler.csrf_token }}">
           {% if page_name == 'contest_edit' %}

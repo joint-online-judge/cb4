@@ -242,7 +242,7 @@ RULES = {
                                   functools.partial(enumerate, start=1),
                                   _acm_scoreboard),
   constant.contest.RULE_ASSIGNMENT: Rule(lambda tdoc, now: now >= tdoc['begin_at'],
-                                         lambda tdoc, now: False,   # TODO: show scoreboard according to assignment preference
+                                         lambda tdoc, now: tdoc.get('show_scoreboard') or False,
                                          _assignment_stat,
                                          [('penalty_score', -1), ('time', 1)],
                                          functools.partial(enumerate, start=1),
@@ -386,7 +386,7 @@ async def update_status(domain_id: str, tid: objectid.ObjectId, uid: int, rid: o
   tdoc = await document.get(domain_id, {'$in': [document.TYPE_CONTEST, document.TYPE_HOMEWORK]}, tid)
   rdoc = await record.get(rid)
   doc_type = tdoc['doc_type']
-  submit_time = rdoc.get('submit_time') or tid.generation_time
+  submit_time = rdoc.get('submit_time') or rid.generation_time
   tsdoc = await document.rev_push_status(
     domain_id, doc_type, tdoc['doc_id'], uid,
     'journal', {'rid': rid, 'pid': pid, 'accept': accept, 'score': score, 'submit_time': submit_time})

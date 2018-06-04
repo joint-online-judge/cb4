@@ -734,7 +734,7 @@ class ContestEditHandler(ContestMixin, ContestPageCategoryMixin, base.Handler):
                            begin_at_date: str, begin_at_time: str,
                            penalty_since_date: str, penalty_since_time: str,
                            extension_days: float, penalty_rules: str,
-                           pids: str):
+                           pids: str, show_scoreboard: bool = False):
     tdoc = await contest.get(self.domain_id, document.TYPE_HOMEWORK, tid)
     if not self.own(tdoc, builtin.PERM_EDIT_HOMEWORK_SELF):
       self.check_perm(builtin.PERM_EDIT_HOMEWORK)
@@ -757,7 +757,7 @@ class ContestEditHandler(ContestMixin, ContestPageCategoryMixin, base.Handler):
     pids = _parse_pids(pids)
     await self.verify_problems(pids)
     await contest.edit(self.domain_id, document.TYPE_HOMEWORK, tdoc['doc_id'], title=title, content=content,
-                       begin_at=begin_at, end_at=end_at, pids=pids,
+                       begin_at=begin_at, end_at=end_at, pids=pids, show_scoreboard=show_scoreboard,
                        penalty_since=penalty_since, penalty_rules=penalty_rules)
     await self.hide_problems(pids)
     if tdoc['begin_at'] != begin_at \
