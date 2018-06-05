@@ -89,3 +89,4 @@ page.contest_edit.contest.title: Edit Contest
 page.contest_edit.homework.title: Edit Homework
 page.contest_detail_problem_submit.contest.title: Contest Submission
 page.contest_detail_problem_submit.homework.title: Homework Submission
+page.contest_system_test.homework.title: Homework System Test
