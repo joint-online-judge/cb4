@@ -16,9 +16,15 @@
       <div class="section__header">
         <h1 class="section__title">{{ _('Code') }}</h1>
       </div>
+      {% if rdoc['code_type'] == vj4.constant.record.CODE_TYPE_TEXT %}
       <div class="section__body" data-syntax-hl-show-line-number>
         <pre><code class="language-{{ vj4.constant.language.LANG_HIGHLIGHT_ID[rdoc['lang']] }}">{{ rdoc['code'] }}</code></pre>
       </div>
+      {% else %}
+      <div class="section__body">
+        <a href="{{ rdoc['code_url'] }}"><span class="icon icon-download"></span> {{ _('Download') }}</a>
+      </div>
+      {% endif %}
     </div>
     {% endif %}
   </div>
@@ -89,7 +95,7 @@
             {{ _('Submit At') }}
           </dt>
           <dd>
-            {{ datetime_span(rdoc['_id'].generation_time) }}
+            {{ datetime_span(rdoc['submit_time'] or rdoc['_id'].generation_time) }}
           </dd>
           {% if rdoc['judge_at'] %}
           <dt>{{ _('Judged At') }}</dt>

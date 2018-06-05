@@ -734,7 +734,7 @@ class ContestEditHandler(ContestMixin, ContestPageCategoryMixin, base.Handler):
                            begin_at_date: str, begin_at_time: str,
                            penalty_since_date: str, penalty_since_time: str,
                            extension_days: float, penalty_rules: str,
-                           pids: str):
+                           pids: str, show_scoreboard: bool = False):
     tdoc = await contest.get(self.domain_id, document.TYPE_HOMEWORK, tid)
     if not self.own(tdoc, builtin.PERM_EDIT_HOMEWORK_SELF):
       self.check_perm(builtin.PERM_EDIT_HOMEWORK)
@@ -757,7 +757,7 @@ class ContestEditHandler(ContestMixin, ContestPageCategoryMixin, base.Handler):
     pids = _parse_pids(pids)
     await self.verify_problems(pids)
     await contest.edit(self.domain_id, document.TYPE_HOMEWORK, tdoc['doc_id'], title=title, content=content,
-                       begin_at=begin_at, end_at=end_at, pids=pids,
+                       begin_at=begin_at, end_at=end_at, pids=pids, show_scoreboard=show_scoreboard,
                        penalty_since=penalty_since, penalty_rules=penalty_rules)
     await self.hide_problems(pids)
     if tdoc['begin_at'] != begin_at \
@@ -766,3 +766,77 @@ class ContestEditHandler(ContestMixin, ContestPageCategoryMixin, base.Handler):
         or set(tdoc['pids']) != set(pids):
       await contest.recalc_status(self.domain_id, document.TYPE_HOMEWORK, tdoc['doc_id'])
     self.json_or_redirect(self.reverse_url('contest_detail', ctype='homework', tid=tid))
+
+
+@app.route('/{ctype:contest|homework}/{tid}/sentence', 'contest_sentence')
+class ContestEditHandler(ContestMixin, ContestPageCategoryMixin, base.Handler):
+  @base.route_argument
+  async def get(self, *, ctype: str, **kwargs):
+    if ctype == 'homework':
+      await self._get_homework(**kwargs)
+    elif ctype == 'contest':
+      raise error.InvalidArgumentError('ctype')
+      # await self._get_contest(**kwargs)
+    else:
+      raise error.InvalidArgumentError('ctype')
+
+  @base.require_priv(builtin.PRIV_USER_PROFILE)
+  @base.sanitize
+  async def _get_homework(self, *, tid: objectid.ObjectId):
+    tdoc = await contest.get(self.domain_id, document.TYPE_HOMEWORK, tid)
+    if not self.own(tdoc, builtin.PERM_EDIT_HOMEWORK_SELF):
+      self.check_perm(builtin.PERM_EDIT_HOMEWORK)
+    page_title = self.translate('page.contest_sentence.homework.title')
+    path_components = self.build_path(
+      (self.translate('page.contest_main.homework.title'), self.reverse_url('contest_main', ctype='homework')),
+      (tdoc['title'], self.reverse_url('contest_detail', ctype='homework', tid=tdoc['doc_id'])),
+      (page_title, None))
+    self.render('homework_sentence.html', tdoc=tdoc,
+                page_title=page_title, path_components=path_components)
+
+  @base.route_argument
+  async def post(self, *, ctype: str, **kwargs):
+    if ctype == 'homework':
+      await self._post_homework()
+    elif ctype == 'contest':
+      raise error.InvalidArgumentError('ctype')
+      # await self._post_contest()
+    else:
+      raise error.InvalidArgumentError('ctype')
+
+  def split_tags(self, s):
+    s = s.replace('，', ',')  # Chinese ', '
+    return sorted(list(filter(lambda _: _ != '', map(lambda _: _.strip(), s.split(',')))))
+
+  @base.require_priv(builtin.PRIV_USER_PROFILE)
+  @base.require_perm(builtin.PERM_EDIT_PROBLEM)
+  @base.route_argument
+  @base.post_argument
+  @base.require_csrf_token
+  @base.sanitize
+  async def _post_homework(self, *, ctype: str, tid: objectid.ObjectId, judge_category: str, sentence_new: bool = False):
+    tdoc = await contest.get(self.domain_id, document.TYPE_HOMEWORK, tid)
+    if not self.own(tdoc, builtin.PERM_EDIT_HOMEWORK_SELF):
+      self.check_perm(builtin.PERM_EDIT_HOMEWORK)
+    doc_type = constant.contest.CTYPE_TO_DOCTYPE[ctype]
+    judge_category = self.split_tags(judge_category)
+    tdoc, tsdocs = await contest.get_and_list_status(self.domain_id, doc_type, tid)
+
+    for tsdoc in tsdocs:
+      rids = list(map(lambda x: x['rid'], tsdoc['journal']))
+      rdocs = record.get_multi(get_hidden=True, _id={'$in': rids}).sort([('_id', -1)])
+
+      # find the newest record to be sentenced
+      async for rdoc in rdocs:
+        if sentence_new and sorted(rdoc['judge_category']) == judge_category:
+          # in sentence new mode, records with same judge_category are skipped
+          break
+        if len(rdoc['judge_category']) > 0:
+          # records with judge_category are not origin records
+          continue
+        rid = await record.sentence(rdoc, judge_category)
+        await contest.update_status(self.domain_id, rdoc['tid'], rdoc['uid'], rid, rdoc['pid'], False, 0)
+        break
+
+    # self.json_or_redirect(self.reverse_url('contest_sentence', ctype=ctype, tid=tid))
+    self.json_or_redirect(self.reverse_url('contest_detail', ctype=ctype, tid=tid))

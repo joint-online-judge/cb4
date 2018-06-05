@@ -50,7 +50,7 @@
               {% else %}
                 <td class="col--status record-status--border"><a href="{{ reverse_url('record_detail', rid=rdoc['_id'], domain_id=handler.domain_id) }}">{{ _('Submitted') }}</a></td>
               {% endif %}
-                <td class="col--submit-at">{{ datetime_span(rdoc['_id'].generation_time) }}</td>
+                <td class="col--submit-at">{{ datetime_span(rdoc['submit_time'] or rdoc['_id'].generation_time) }}</td>
               {% endwith %}
               {% else %}
                 <td class="col--status record-status--border">{{ _('No Submissions') }}</td>

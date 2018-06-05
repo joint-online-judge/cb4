@@ -9,6 +9,7 @@ from pymongo import errors
 from vj4 import constant
 from vj4 import error
 from vj4.model import document
+from vj4.model import record
 from vj4.util import argmethod
 from vj4.util import misc
 from vj4.util import rank
@@ -58,12 +59,12 @@ def _assignment_stat(tdoc, journal):
       effective[j['pid']] = j
 
   def time(jdoc):
-    real = jdoc['rid'].generation_time.replace(tzinfo=None) - tdoc['begin_at']
+    real = jdoc['submit_time'].replace(tzinfo=None) - tdoc['begin_at']
     return int(real.total_seconds())
 
   def penalty_score(jdoc):
     score = jdoc['score']
-    exceed_seconds = (jdoc['rid'].generation_time.replace(tzinfo=None) - tdoc['penalty_since']).total_seconds()
+    exceed_seconds = (jdoc['submit_time'].replace(tzinfo=None) - tdoc['penalty_since']).total_seconds()
     if exceed_seconds < 0:
       return score
     coefficient = 1
@@ -241,7 +242,7 @@ RULES = {
                                   functools.partial(enumerate, start=1),
                                   _acm_scoreboard),
   constant.contest.RULE_ASSIGNMENT: Rule(lambda tdoc, now: now >= tdoc['begin_at'],
-                                         lambda tdoc, now: False,   # TODO: show scoreboard according to assignment preference
+                                         lambda tdoc, now: tdoc.get('show_scoreboard') or False,
                                          _assignment_stat,
                                          [('penalty_score', -1), ('time', 1)],
                                          functools.partial(enumerate, start=1),
@@ -383,10 +384,12 @@ async def update_status(domain_id: str, tid: objectid.ObjectId, uid: int, rid: o
                         pid: document.convert_doc_id, accept: bool, score: int):
   """This method returns None when the modification has been superseded by a parallel operation."""
   tdoc = await document.get(domain_id, {'$in': [document.TYPE_CONTEST, document.TYPE_HOMEWORK]}, tid)
+  rdoc = await record.get(rid)
   doc_type = tdoc['doc_type']
+  submit_time = rdoc.get('submit_time') or rid.generation_time
   tsdoc = await document.rev_push_status(
     domain_id, doc_type, tdoc['doc_id'], uid,
-    'journal', {'rid': rid, 'pid': pid, 'accept': accept, 'score': score})
+    'journal', {'rid': rid, 'pid': pid, 'accept': accept, 'score': score, 'submit_time': submit_time})
   if 'attend' not in tsdoc or not tsdoc['attend']:
     if doc_type == document.TYPE_CONTEST:
       raise error.ContestNotAttendedError(domain_id, tid, uid)

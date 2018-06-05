@@ -148,6 +148,8 @@ class RecordDetailHandler(RecordMixin, base.Handler):
         and not self.has_perm(builtin.PERM_READ_RECORD_CODE)
         and not self.has_priv(builtin.PRIV_READ_RECORD_CODE)):
       del rdoc['code']
+    elif rdoc['code_type'] != constant.record.CODE_TYPE_TEXT:
+      rdoc['code_url'] = '/records/%s/code' % rdoc['_id']
     if not show_status and 'code' not in rdoc:
       raise error.PermissionError(builtin.PERM_VIEW_CONTEST_HIDDEN_SCOREBOARD)
     udoc, dudoc = await asyncio.gather(
