@@ -51,7 +51,7 @@ async def add(domain_id: str, pid: document.convert_doc_id, type: int, uid: int,
   return rid
 
 @argmethod.wrap
-async def sentence(rdoc, judge_category):
+async def system_test(rdoc, judge_category):
   coll = db.coll('record')
   doc = {'hidden': rdoc['hidden'],
          'status': constant.record.STATUS_WAITING,

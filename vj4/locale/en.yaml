@@ -84,8 +84,9 @@ page.contest_detail.homework.info.extension: Extension
 page.contest_create.contest.title: Create Contest
 page.contest_create.homework.title: Create Homework
 page.contest_scoreboard.contest.title: Contest Scoreboard
-page.contest_scoreboard.homework.title: Homework Scoreboard
+page.contest_scoreboard.homework.title: Homework Scoreboardce
 page.contest_edit.contest.title: Edit Contest
 page.contest_edit.homework.title: Edit Homework
 page.contest_detail_problem_submit.contest.title: Contest Submission
 page.contest_detail_problem_submit.homework.title: Homework Submission
+page.contest_system_test.homework.title: Homework System Test

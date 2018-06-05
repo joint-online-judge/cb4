@@ -601,7 +601,7 @@ class ContestCreateHandler(ContestMixin, ContestPageCategoryMixin, base.Handler)
                            begin_at_date: str, begin_at_time: str,
                            penalty_since_date: str, penalty_since_time: str,
                            extension_days: float, penalty_rules: str,
-                           pids: str):
+                           pids: str, show_scoreboard: bool = False):
     penalty_rules = _parse_penalty_rules_yaml(penalty_rules)
     try:
       begin_at = datetime.datetime.strptime(begin_at_date + ' ' + begin_at_time, '%Y-%m-%d %H:%M')
@@ -621,7 +621,7 @@ class ContestCreateHandler(ContestMixin, ContestPageCategoryMixin, base.Handler)
     pids = _parse_pids(pids)
     await self.verify_problems(pids)
     tid = await contest.add(self.domain_id, document.TYPE_HOMEWORK, title, content, self.user['_id'],
-                            constant.contest.RULE_ASSIGNMENT, begin_at, end_at, pids,
+                            constant.contest.RULE_ASSIGNMENT, begin_at, end_at, pids, show_scoreboard,
                             penalty_since=penalty_since, penalty_rules=penalty_rules)
     await self.hide_problems(pids)
     self.json_or_redirect(self.reverse_url('contest_detail', ctype='homework', tid=tid))
@@ -668,7 +668,7 @@ class ContestEditHandler(ContestMixin, ContestPageCategoryMixin, base.Handler):
     penalty_since = pytz.utc.localize(tdoc['penalty_since']).astimezone(self.timezone)
     end_at = pytz.utc.localize(tdoc['end_at']).astimezone(self.timezone)
     extension_days = round((end_at - penalty_since).total_seconds() / 60 / 60 / 24, ndigits=2)
-    page_title = self.translate('page.contest_create.homework.title')
+    page_title = self.translate('page.contest_edit.homework.title')
     path_components = self.build_path(
       (self.translate('page.contest_main.homework.title'), self.reverse_url('contest_main', ctype='homework')),
       (tdoc['title'], self.reverse_url('contest_detail', ctype='homework', tid=tdoc['doc_id'])),
@@ -768,7 +768,7 @@ class ContestEditHandler(ContestMixin, ContestPageCategoryMixin, base.Handler):
     self.json_or_redirect(self.reverse_url('contest_detail', ctype='homework', tid=tid))
 
 
-@app.route('/{ctype:contest|homework}/{tid}/sentence', 'contest_sentence')
+@app.route('/{ctype:contest|homework}/{tid}/system_test', 'contest_system_test')
 class ContestEditHandler(ContestMixin, ContestPageCategoryMixin, base.Handler):
   @base.route_argument
   async def get(self, *, ctype: str, **kwargs):
@@ -786,12 +786,12 @@ class ContestEditHandler(ContestMixin, ContestPageCategoryMixin, base.Handler):
     tdoc = await contest.get(self.domain_id, document.TYPE_HOMEWORK, tid)
     if not self.own(tdoc, builtin.PERM_EDIT_HOMEWORK_SELF):
       self.check_perm(builtin.PERM_EDIT_HOMEWORK)
-    page_title = self.translate('page.contest_sentence.homework.title')
+    page_title = self.translate('page.contest_system_test.homework.title')
     path_components = self.build_path(
       (self.translate('page.contest_main.homework.title'), self.reverse_url('contest_main', ctype='homework')),
       (tdoc['title'], self.reverse_url('contest_detail', ctype='homework', tid=tdoc['doc_id'])),
       (page_title, None))
-    self.render('homework_sentence.html', tdoc=tdoc,
+    self.render('homework_system_test.html', tdoc=tdoc,
                 page_title=page_title, path_components=path_components)
 
   @base.route_argument
@@ -814,7 +814,7 @@ class ContestEditHandler(ContestMixin, ContestPageCategoryMixin, base.Handler):
   @base.post_argument
   @base.require_csrf_token
   @base.sanitize
-  async def _post_homework(self, *, ctype: str, tid: objectid.ObjectId, judge_category: str, sentence_new: bool = False):
+  async def _post_homework(self, *, ctype: str, tid: objectid.ObjectId, judge_category: str, system_test_new: bool = False):
     tdoc = await contest.get(self.domain_id, document.TYPE_HOMEWORK, tid)
     if not self.own(tdoc, builtin.PERM_EDIT_HOMEWORK_SELF):
       self.check_perm(builtin.PERM_EDIT_HOMEWORK)
@@ -823,20 +823,23 @@ class ContestEditHandler(ContestMixin, ContestPageCategoryMixin, base.Handler):
     tdoc, tsdocs = await contest.get_and_list_status(self.domain_id, doc_type, tid)
 
     for tsdoc in tsdocs:
+      # continue if no record found
+      if not tsdoc.get('journal'):
+        continue
+
       rids = list(map(lambda x: x['rid'], tsdoc['journal']))
       rdocs = record.get_multi(get_hidden=True, _id={'$in': rids}).sort([('_id', -1)])
 
-      # find the newest record to be sentenced
+      # find the newest record to be system tested
       async for rdoc in rdocs:
-        if sentence_new and sorted(rdoc['judge_category']) == judge_category:
-          # in sentence new mode, records with same judge_category are skipped
+        if system_test_new and sorted(rdoc['judge_category']) == judge_category:
+          # in system test new mode, records with same judge_category are skipped
           break
         if len(rdoc['judge_category']) > 0:
           # records with judge_category are not origin records
           continue
-        rid = await record.sentence(rdoc, judge_category)
+        rid = await record.system_test(rdoc, judge_category)
         await contest.update_status(self.domain_id, rdoc['tid'], rdoc['uid'], rid, rdoc['pid'], False, 0)
         break
 
-    # self.json_or_redirect(self.reverse_url('contest_sentence', ctype=ctype, tid=tid))
     self.json_or_redirect(self.reverse_url('contest_detail', ctype=ctype, tid=tid))

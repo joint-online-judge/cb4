@@ -728,6 +728,7 @@ page.contest_create.contest.title: 创建比赛
 page.contest_create.homework.title: 创建作业
 page.contest_detail_problem_submit.contest.title: 递交比赛代码
 page.contest_detail_problem_submit.homework.title: 递交作业代码
+page.contest_system_test.homework.title: 作业系统测试
 View homework: 查看作业
 View homework scoreboard: 查看作业成绩表
 View hidden homework submission status and scoreboard: 查看隐藏的作业递交状态和成绩表
