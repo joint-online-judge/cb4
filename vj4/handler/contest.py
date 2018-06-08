@@ -426,7 +426,7 @@ class ContestDetailProblemSubmitHandler(ContestMixin, ContestPageCategoryMixin, 
   @base.require_perm(builtin.PERM_VIEW_HOMEWORK, when=lambda ctype, **kwargs: ctype == 'homework')
   @base.require_perm(builtin.PERM_SUBMIT_PROBLEM)
   @base.limit_rate('add_record', 60, 100)
-  @base.limit_rate_user('add_record', 24, 3)
+  @base.limit_rate_homework('add_record', 24)
   async def post(self, *, ctype: str, tid: objectid.ObjectId, pid: document.convert_doc_id,
                  lang: str, code: objectid.ObjectId):
     doc_type = constant.contest.CTYPE_TO_DOCTYPE[ctype]
@@ -668,6 +668,7 @@ class ContestEditHandler(ContestMixin, ContestPageCategoryMixin, base.Handler):
     penalty_since = pytz.utc.localize(tdoc['penalty_since']).astimezone(self.timezone)
     end_at = pytz.utc.localize(tdoc['end_at']).astimezone(self.timezone)
     extension_days = round((end_at - penalty_since).total_seconds() / 60 / 60 / 24, ndigits=2)
+    limit_rate = tdoc.get('limit_rate') or 0
     page_title = self.translate('page.contest_edit.homework.title')
     path_components = self.build_path(
       (self.translate('page.contest_main.homework.title'), self.reverse_url('contest_main', ctype='homework')),
@@ -679,6 +680,7 @@ class ContestEditHandler(ContestMixin, ContestPageCategoryMixin, base.Handler):
                 date_penalty_text=penalty_since.strftime('%Y-%m-%d'),
                 time_penalty_text=penalty_since.strftime('%H:%M'),
                 extension_days=extension_days,
+                limit_rate=limit_rate,
                 penalty_rules=_format_penalty_rules_yaml(tdoc['penalty_rules']),
                 pids=_format_pids(tdoc['pids']),
                 page_title=page_title, path_components=path_components)
@@ -733,7 +735,7 @@ class ContestEditHandler(ContestMixin, ContestPageCategoryMixin, base.Handler):
   async def _post_homework(self, *, ctype: str, tid: objectid.ObjectId, title: str, content: str,
                            begin_at_date: str, begin_at_time: str,
                            penalty_since_date: str, penalty_since_time: str,
-                           extension_days: float, penalty_rules: str,
+                           extension_days: float, limit_rate: int, penalty_rules: str,
                            pids: str, show_scoreboard: bool = False):
     tdoc = await contest.get(self.domain_id, document.TYPE_HOMEWORK, tid)
     if not self.own(tdoc, builtin.PERM_EDIT_HOMEWORK_SELF):
@@ -758,7 +760,7 @@ class ContestEditHandler(ContestMixin, ContestPageCategoryMixin, base.Handler):
     await self.verify_problems(pids)
     await contest.edit(self.domain_id, document.TYPE_HOMEWORK, tdoc['doc_id'], title=title, content=content,
                        begin_at=begin_at, end_at=end_at, pids=pids, show_scoreboard=show_scoreboard,
-                       penalty_since=penalty_since, penalty_rules=penalty_rules)
+                       penalty_since=penalty_since, penalty_rules=penalty_rules, limit_rate=limit_rate)
     await self.hide_problems(pids)
     if tdoc['begin_at'] != begin_at \
         or tdoc['end_at'] != end_at \

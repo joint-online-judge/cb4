@@ -312,6 +312,9 @@ async def edit(domain_id: str, doc_type: int, tid: objectid.ObjectId, **kwargs):
       raise error.ValidationError('penalty_since', 'begin_at')
     if 'end_at' in kwargs and kwargs['penalty_since'] > kwargs['end_at']:
       raise error.ValidationError('penalty_since', 'end_at')
+  if 'limit_rate' in kwargs:
+    if kwargs['limit_rate'] < 0:
+      raise error.ValidationError('limit_rate')
   return await document.set(domain_id, doc_type, tid, **kwargs)
 
 
