@@ -16,7 +16,7 @@
           </div>
           <div class="row">
             {{ form.form_text(columns=4, label='Extension (days)', name='extension_days', value=extension_days, row=False) }}
-            {{ form.form_text(columns=4, label='Limit Rate (per day, 0 for no limit)', name='limit_rate', value=limit_rate, row=False) }}
+            {{ form.form_text(columns=4, label='Limit Rate (per day, 0 for no limit)', name='limit_rate', value=limit_rate|default(0), row=False) }}
           </div>
           <div class="row"><div class="columns">
             <label>

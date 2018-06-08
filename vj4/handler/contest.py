@@ -600,7 +600,7 @@ class ContestCreateHandler(ContestMixin, ContestPageCategoryMixin, base.Handler)
   async def _post_homework(self, *, ctype: str, title: str, content: str,
                            begin_at_date: str, begin_at_time: str,
                            penalty_since_date: str, penalty_since_time: str,
-                           extension_days: float, penalty_rules: str,
+                           extension_days: float, limit_rate: int, penalty_rules: str,
                            pids: str, show_scoreboard: bool = False):
     penalty_rules = _parse_penalty_rules_yaml(penalty_rules)
     try:
@@ -622,7 +622,7 @@ class ContestCreateHandler(ContestMixin, ContestPageCategoryMixin, base.Handler)
     await self.verify_problems(pids)
     tid = await contest.add(self.domain_id, document.TYPE_HOMEWORK, title, content, self.user['_id'],
                             constant.contest.RULE_ASSIGNMENT, begin_at, end_at, pids, show_scoreboard=show_scoreboard,
-                            penalty_since=penalty_since, penalty_rules=penalty_rules)
+                            penalty_since=penalty_since, penalty_rules=penalty_rules, limit_rate=limit_rate)
     await self.hide_problems(pids)
     self.json_or_redirect(self.reverse_url('contest_detail', ctype='homework', tid=tid))
 
