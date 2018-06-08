@@ -621,7 +621,7 @@ class ContestCreateHandler(ContestMixin, ContestPageCategoryMixin, base.Handler)
     pids = _parse_pids(pids)
     await self.verify_problems(pids)
     tid = await contest.add(self.domain_id, document.TYPE_HOMEWORK, title, content, self.user['_id'],
-                            constant.contest.RULE_ASSIGNMENT, begin_at, end_at, pids, show_scoreboard,
+                            constant.contest.RULE_ASSIGNMENT, begin_at, end_at, pids, show_scoreboard=show_scoreboard,
                             penalty_since=penalty_since, penalty_rules=penalty_rules)
     await self.hide_problems(pids)
     self.json_or_redirect(self.reverse_url('contest_detail', ctype='homework', tid=tid))
