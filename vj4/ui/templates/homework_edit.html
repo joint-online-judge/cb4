@@ -9,11 +9,15 @@
           <div class="row">
             {{ form.form_text(columns=4, label='Begin Date', name='begin_at_date', placeholder='YYYY-mm-dd', value=date_begin_text, date=True, row=False) }}
             {{ form.form_text(columns=4, last_column=True, label='Begin Time', name='begin_at_time', placeholder='HH:MM', value=time_begin_text, time=True, row=False) }}
-          </div><div class="row">
+          </div>
+          <div class="row">
             {{ form.form_text(columns=4, label='End Date', name='penalty_since_date', placeholder='YYYY-mm-dd', value=date_penalty_text, date=True, row=False) }}
             {{ form.form_text(columns=4, last_column=True, label='End Time', name='penalty_since_time', placeholder='HH:MM', value=time_penalty_text, time=True, row=False) }}
           </div>
-          {{ form.form_text(columns=4, label='Extension (days)', name='extension_days', value=extension_days) }}
+          <div class="row">
+            {{ form.form_text(columns=4, label='Extension (days)', name='extension_days', value=extension_days, row=False) }}
+            {{ form.form_text(columns=4, label='Limit Rate (per day, 0 for no limit)', name='limit_rate', value=limit_rate|default(0), row=False) }}
+          </div>
           <div class="row"><div class="columns">
             <label>
               {{ _('Extension Score Penalty') }}

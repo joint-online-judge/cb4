@@ -11,6 +11,7 @@ from aiohttp import web
 from email import utils
 
 from vj4 import app
+from vj4 import constant
 from vj4 import error
 from vj4 import template
 from vj4.model import builtin
@@ -19,6 +20,7 @@ from vj4.model import fs
 from vj4.model import opcount
 from vj4.model import token
 from vj4.model import user
+from vj4.model.adaptor import contest
 from vj4.model.adaptor import setting
 from vj4.service import mailer
 from vj4.util import json
@@ -39,7 +41,7 @@ class HandlerBase(setting.SettingMixin):
     if 'uid' in self.session:
       uid = self.session['uid']
       self.user, self.domain, self.domain_user = await asyncio.gather(
-          user.get_by_uid(uid), domain.get(self.domain_id), domain.get_user(self.domain_id, uid))
+        user.get_by_uid(uid), domain.get(self.domain_id), domain.get_user(self.domain_id, uid))
       if not self.user:
         raise error.UserNotFoundError(uid)
       if not self.domain_user:
@@ -382,10 +384,10 @@ def _datetime_span(dt, relative=True, format='%Y-%m-%d %H:%M:%S', timezone=pytz.
   if not dt.tzinfo:
     dt = dt.replace(tzinfo=pytz.utc)
   return markupsafe.Markup(
-      '<span class="time{0}" data-timestamp="{1}">{2}</span>'.format(
-          ' relative' if relative else '',
-          calendar.timegm(dt.utctimetuple()),
-          dt.astimezone(timezone).strftime(format)))
+    '<span class="time{0}" data-timestamp="{1}">{2}</span>'.format(
+      ' relative' if relative else '',
+      calendar.timegm(dt.utctimetuple()),
+      dt.astimezone(timezone).strftime(format)))
 
 
 @functools.lru_cache()
@@ -499,6 +501,7 @@ def multipart_argument(coro):
 
   return wrapped
 
+
 def limit_rate(op, period_secs, max_operations):
   def decorate(coro):
     @functools.wraps(coro)
@@ -507,19 +510,24 @@ def limit_rate(op, period_secs, max_operations):
       return await coro(self, **kwargs)
 
     return wrapped
+
   return decorate
 
 
-def limit_rate_user(op, period_hours, max_operations):
+def limit_rate_homework(op, period_hours, max_operations_default=1000):
   def decorate(coro):
     @functools.wraps(coro)
     async def wrapped(self, **kwargs):
       if not self.has_priv(builtin.PRIV_ALL):
+        doc_type = constant.contest.CTYPE_TO_DOCTYPE['homework']
+        tdoc = await contest.get(self.domain_id, doc_type, kwargs['tid'])
+        max_operations = tdoc.get('limit_rate') or max_operations_default
         await opcount.inc(op, str(self.user['_id']) + str(kwargs['tid']) + str(kwargs['pid']),
-                          period_hours*3600, max_operations)
+                          period_hours * 3600, max_operations)
       return await coro(self, **kwargs)
 
     return wrapped
+
   return decorate
 
 
