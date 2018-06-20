@@ -22,7 +22,7 @@
       </div>
       {% else %}
       <div class="section__body">
-        <a href="{{ rdoc['code_url'] }}"><span class="icon icon-download"></span> {{ _('Download') }}</a>
+        <a href="{{ reverse_url('record_code', rid=rdoc['_id']) }}"><span class="icon icon-download"></span> {{ _('Download') }}</a>
       </div>
       {% endif %}
     </div>
