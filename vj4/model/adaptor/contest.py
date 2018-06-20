@@ -176,6 +176,7 @@ def _assignment_scoreboard(is_export, _, tdoc, ranked_tsdocs, udict, pdict):
   columns = []
   columns.append({'type': 'rank', 'value': _('Rank')})
   columns.append({'type': 'user', 'value': _('User')})
+  columns.append({'type': 'uid', 'value': _('ID')})
   columns.append({'type': 'total_score', 'value': _('Score')})
   if is_export:
     columns.append({'type': 'total_original_score', 'value': _('Original Score')})
@@ -204,6 +205,7 @@ def _assignment_scoreboard(is_export, _, tdoc, ranked_tsdocs, udict, pdict):
     row.append({'type': 'string', 'value': rank})
     row.append({'type': 'user',
                 'value': udict[tsdoc['uid']]['realname'], 'raw': udict[tsdoc['uid']]})
+    row.append({'type': 'string', 'value': udict[tsdoc['uid']]['_id']})
     row.append({'type': 'string',
                 'value': tsdoc.get('penalty_score', 0)})
     if is_export:

@@ -27,7 +27,13 @@ from vj4.util.misc import filter_language
 
 
 def _parse_pids(pids_str):
-  pids = list(set(map(document.convert_doc_id, pids_str.split(','))))
+  pid_list = list(map(document.convert_doc_id, pids_str.split(',')))
+  pid_set = set()
+  pids = []
+  for pid in pid_list:
+    if not pid in pid_set:
+      pid_set.add(pid)
+      pids.append(pid)
   return pids
 
 
