@@ -32,7 +32,9 @@
               <p class="help-text">{{ _('Difficulty by admin') }}: {{ pdoc['difficulty_admin'] or _('(None)') }}</p>
             </div>
           </div>
-          {{ form.form_text(columns=12, label='Code languages', help_text='Splitted by \', \'. Will support selection later.', name='languages', value=pdoc['languages']|join(', ')) }}
+{#          {{ form.form_text(columns=12, label='Code languages', help_text='Splitted by \', \'. Will support selection later.', name='languages', value=pdoc['languages']|join(', ')) }}#}
+          {{ form.form_select(columns=12, label='Code languages', name='languages', options=vj4.constant.language.LANG_TEXTS.items(),
+              value=pdoc['languages']|join(', ')) }}
           <div class="row"><div class="columns">
             <input type="hidden" name="csrf_token" value="{{ handler.csrf_token }}">
             <button type="submit" class="rounded primary button">
