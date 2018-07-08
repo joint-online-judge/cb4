@@ -49,6 +49,7 @@
 {% set autofocus = kwargs.pop('autofocus', false) %}
 {% set date = kwargs.pop('date', false) %}
 {% set time = kwargs.pop('time', false) %}
+{% set extra_class = kwargs.pop('extra_class', none) %}
   class="{{ form_class }}{% if extra_class %} {{ extra_class }}{% endif %}"
   {% if disabled %}disabled{% endif %}
   {% if required %}required{% endif %}
@@ -83,6 +84,34 @@
 {% macro form_select(columns=5) %}
 {{ form_begin(columns=columns, **kwargs) }}
 {{ select(columns=columns, **kwargs) }}
+{{ form_end(columns=columns, **kwargs) }}
+{% endmacro %}
+
+{% macro select2(options, name='', value=[], multiple=false) %}
+{% if not value is sequence or value is string %}
+  {% set value = [value] %}
+{% endif %}
+<div
+  name="form_item_{{ name }}"
+  {{ container_attr('select-container', **kwargs) }}
+>
+  <select
+    name="{{ name }}"
+    {{ form_attr('select select2', **kwargs) }}
+    {% if multiple %} multiple="multiple" {% endif %}
+  >
+  {% for k, v in options %}
+    <option value="{{ k }}"{% if k in value %} selected{% endif %}>
+      {{ _(v) }}
+    </option>
+  {% endfor %}
+  </select>
+</div>
+{% endmacro %}
+
+{% macro form_select2(columns=5) %}
+{{ form_begin(columns=columns, **kwargs) }}
+{{ select2(columns=columns, **kwargs) }}
 {{ form_end(columns=columns, **kwargs) }}
 {% endmacro %}
 
