@@ -1,14 +1,7 @@
 @import './var.inc.styl'
 
-.select
+.select, .select2-selection__rendered
   form-styles()
-  padding-right: 1.1rem
-  background-color: $input-background-color
-  background-image: url('~vj/misc/icons/' + $icon-expand_more-file)
-  background-size: 16px 16px
-  background-position: right -1rem center
-  background-origin: content-box
-  background-repeat: no-repeat
   outline: $input-outline
   transition: outline-color .2s, border-color .2s
   transition-timing-function: ease-out-cubic
@@ -21,9 +14,58 @@
   &:disabled
     opacity: 0.5
 
+.select, .select2-selection__arrow
+  background-color: $input-background-color
+  background-image: url('~vj/misc/icons/' + $icon-expand_more-file)
+  background-size: 16px 16px
+  background-origin: content-box
+  background-repeat: no-repeat
+
+.select
+  padding-right: 1.1rem
+  background-position: right -1rem center
+
+.select2-selection__arrow
+  height: 80% !important
+  top: 10% !important
+  background-position: center
+
 .select-container.compact .select, .select.compact
   margin-bottom: 0
   height: rem($compact-control-height)
   line-height: rem($compact-control-height - 2)
   padding-top: 0
   padding-bottom: 0
+
+.select2-container
+  width: 100% !important
+  height: rem($form-control-height)
+  margin: $input-margin
+
+.select2-container .selection, .select2-selection
+  width: 100% !important
+  height: 100% !important
+
+.select2-selection
+  border: 0 !important
+
+.select2-selection__rendered
+  padding: rem(5px) !important
+  line-height: rem($form-control-height - 12px) !important
+
+.select2-dropdown, .select2-search__field
+  border: $input-border !important
+
+.select2-selection__arrow b
+  display: none
+
+.select2-selection__choice
+  margin-top: 0 !important
+
+.select2-search--inline
+  height: 100% !important
+
+  .select2-search__field
+    height: 100% !important
+    border: 0 !important
+    margin-top: 0 !important

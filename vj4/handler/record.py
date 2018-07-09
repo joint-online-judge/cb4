@@ -56,7 +56,7 @@ class RecordMixin(RecordVisibilityMixin, RecordCommonOperationMixin):
 class RecordMainHandler(RecordMixin, base.Handler):
   @base.get_argument
   @base.sanitize
-  async def get(self, *, start: str='', uid_or_name: str='', pid: str='', tid: str=''):
+  async def get(self, *, start: str = '', uid_or_name: str = '', pid: str = '', tid: str = ''):
     if not self.has_priv(builtin.PRIV_VIEW_JUDGE_STATISTICS):
       start = ''
     if start:
@@ -66,25 +66,26 @@ class RecordMainHandler(RecordMixin, base.Handler):
     query = await self.get_filter_query(uid_or_name, pid, tid)
     # TODO(iceboy): projection, pagination.
     rdocs = await record.get_all_multi(**query, end_id=start,
-      get_hidden=self.has_priv(builtin.PRIV_VIEW_HIDDEN_RECORD)).sort([('_id', -1)]).limit(50).to_list()
+                                       get_hidden=self.has_priv(builtin.PRIV_VIEW_HIDDEN_RECORD)).sort(
+      [('_id', -1)]).limit(50).to_list()
     # TODO(iceboy): projection.
     udict, pdict = await asyncio.gather(
-        user.get_dict(rdoc['uid'] for rdoc in rdocs),
-        problem.get_dict_multi_domain((rdoc['domain_id'], rdoc['pid']) for rdoc in rdocs))
+      user.get_dict(rdoc['uid'] for rdoc in rdocs),
+      problem.get_dict_multi_domain((rdoc['domain_id'], rdoc['pid']) for rdoc in rdocs))
     # statistics
     statistics = None
     if self.has_priv(builtin.PRIV_VIEW_JUDGE_STATISTICS):
       ts = calendar.timegm(datetime.datetime.utcnow().utctimetuple())
       day_count, week_count, month_count, year_count, rcount = await asyncio.gather(
-          record.get_count(objectid.ObjectId(
-              struct.pack('>i', ts - 24 * 3600) + struct.pack('b', -1) * 8)),
-          record.get_count(objectid.ObjectId(
-              struct.pack('>i', ts - 7 * 24 * 3600) + struct.pack('b', -1) * 8)),
-          record.get_count(objectid.ObjectId(
-              struct.pack('>i', ts - 30 * 24 * 3600) + struct.pack('b', -1) * 8)),
-          record.get_count(objectid.ObjectId(
-              struct.pack('>i', ts - int(365.2425 * 24 * 3600)) + struct.pack('b', -1) * 8)),
-          record.get_count())
+        record.get_count(objectid.ObjectId(
+          struct.pack('>i', ts - 24 * 3600) + struct.pack('b', -1) * 8)),
+        record.get_count(objectid.ObjectId(
+          struct.pack('>i', ts - 7 * 24 * 3600) + struct.pack('b', -1) * 8)),
+        record.get_count(objectid.ObjectId(
+          struct.pack('>i', ts - 30 * 24 * 3600) + struct.pack('b', -1) * 8)),
+        record.get_count(objectid.ObjectId(
+          struct.pack('>i', ts - int(365.2425 * 24 * 3600)) + struct.pack('b', -1) * 8)),
+        record.get_count())
       statistics = {'day': day_count, 'week': week_count, 'month': month_count,
                     'year': year_count, 'total': rcount}
     url_prefix = '/d/{}'.format(urllib.parse.quote(self.domain_id))
@@ -92,7 +93,7 @@ class RecordMainHandler(RecordMixin, base.Handler):
       [('uid_or_name', uid_or_name), ('pid', pid), ('tid', tid)])
     self.render('record_main.html', rdocs=rdocs, udict=udict, pdict=pdict, statistics=statistics,
                 filter_uid_or_name=uid_or_name, filter_pid=pid, filter_tid=tid,
-                socket_url=url_prefix + '/records-conn?' + query_string, # FIXME(twd2): magic
+                socket_url=url_prefix + '/records-conn?' + query_string,  # FIXME(twd2): magic
                 query_string=query_string)
 
 
@@ -100,7 +101,7 @@ class RecordMainHandler(RecordMixin, base.Handler):
 class RecordMainConnection(RecordMixin, base.Connection):
   @base.get_argument
   @base.sanitize
-  async def on_open(self, *, uid_or_name: str='', pid: str='', tid: str=''):
+  async def on_open(self, *, uid_or_name: str = '', pid: str = '', tid: str = ''):
     await super(RecordMainConnection, self).on_open()
     self.query = await self.get_filter_query(uid_or_name, pid, tid)
     bus.subscribe(self.on_record_change, ['record_change'])
@@ -148,13 +149,11 @@ class RecordDetailHandler(RecordMixin, base.Handler):
         and not self.has_perm(builtin.PERM_READ_RECORD_CODE)
         and not self.has_priv(builtin.PRIV_READ_RECORD_CODE)):
       del rdoc['code']
-    elif rdoc['code_type'] != constant.record.CODE_TYPE_TEXT:
-      rdoc['code_url'] = '/records/%s/code' % rdoc['_id']
     if not show_status and 'code' not in rdoc:
       raise error.PermissionError(builtin.PERM_VIEW_CONTEST_HIDDEN_SCOREBOARD)
     udoc, dudoc = await asyncio.gather(
-        user.get_by_uid(rdoc['uid']),
-        domain.get_user(self.domain_id, rdoc['uid']))
+      user.get_by_uid(rdoc['uid']),
+      domain.get_user(self.domain_id, rdoc['uid']))
     try:
       pdoc = await problem.get(rdoc['domain_id'], rdoc['pid'])
     except error.ProblemNotFoundError:
@@ -169,7 +168,7 @@ class RecordDetailHandler(RecordMixin, base.Handler):
     url_prefix = '/d/{}'.format(urllib.parse.quote(self.domain_id))
     self.render('record_detail.html', rdoc=rdoc, udoc=udoc, dudoc=dudoc, pdoc=pdoc, tdoc=tdoc,
                 judge_udoc=judge_udoc, show_status=show_status,
-                socket_url=url_prefix + '/records/{}/conn'.format(rid)) # FIXME(twd2): magic
+                socket_url=url_prefix + '/records/{}/conn'.format(rid))  # FIXME(twd2): magic
 
 
 @app.connection_route('/records/{rid}/conn', 'record_detail-conn')
@@ -244,7 +243,7 @@ class RecordCodeHandler(base.Handler):
     rdoc = await record.get(rid)
     if not rdoc or rdoc['type'] != constant.record.TYPE_SUBMISSION:
       raise error.RecordNotFoundError(rid)
-    if not self.has_priv(builtin.PRIV_READ_RECORD_CODE):
+    if not self.own(rdoc, field='uid') and not self.has_priv(builtin.PRIV_READ_RECORD_CODE):
       self.check_perm(builtin.PERM_READ_RECORD_CODE)
     if not rdoc.get('code') or rdoc['code_type'] == constant.record.CODE_TYPE_TEXT:
       raise error.RecordDataNotFoundError(rdoc['_id'])
@@ -254,4 +253,3 @@ class RecordCodeHandler(base.Handler):
     self.redirect(options.cdn_prefix.rstrip('/') + \
                   self.reverse_url('fs_get', domain_id=builtin.DOMAIN_ID_SYSTEM,
                                    secret=secret))
-

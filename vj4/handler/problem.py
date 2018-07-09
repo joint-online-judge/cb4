@@ -609,18 +609,18 @@ class ProblemSettingsHandler(base.Handler):
 
   @base.require_priv(builtin.PRIV_USER_PROFILE)
   @base.route_argument
-  @base.post_argument
+  @base.multi_post_argument
   @base.require_csrf_token
   @base.sanitize
   async def post(self, *, pid: document.convert_doc_id, hidden: bool=False,
-                 category: str, tag: str, languages: str,
+                 category: str, tag: str, languages: list,
                  difficulty_setting: int, difficulty_admin: str=''):
     pdoc = await problem.get(self.domain_id, pid)
     if not self.own(pdoc, builtin.PERM_EDIT_PROBLEM_SELF):
       self.check_perm(builtin.PERM_EDIT_PROBLEM)
     category = self.split_tags(category)
     tag = self.split_tags(tag)
-    _languages = self.split_tags(languages)
+    _languages = (await self.request.post()).getall('languages', [])
     languages = []
     for lang in _languages:
       if constant.language.LANG_TEXTS.get(lang):
