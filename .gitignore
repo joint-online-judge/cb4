@@ -38,3 +38,5 @@ vj4/ui/static/locale
 
 !.gitkeep
 config.yaml
+
+venv
