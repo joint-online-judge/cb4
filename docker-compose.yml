@@ -1,0 +1,19 @@
+version: "3"
+services:
+  cb4:
+    #restart: always
+    image: jioj/cb4
+    depends_on:
+      - mongo
+#      - rabbitmq
+    ports:
+      - 34765:34765
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+  mongo:
+    #restart: always
+    image: mongo
+    volumes:
+      - ~/mongo_data:/data/db
