@@ -1,19 +1,28 @@
 version: "3"
 services:
   cb4:
-    #restart: always
+    restart: always
     image: jioj/cb4
+    container_name: cb4
     depends_on:
       - mongo
 #      - rabbitmq
     ports:
       - 34765:34765
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: on-failure
+    privileged: true
+    networks:
+      - default
+    environment:
+      db-host: mongo
   mongo:
-    #restart: always
+    restart: always
     image: mongo
+    container_name: mongo
     volumes:
       - ~/mongo_data:/data/db
+    expose:
+      - 27017
+    networks:
+      - default
+networks:
+  default:

@@ -28,22 +28,22 @@ RUN \. "$NVM_DIR/nvm.sh" && nvm use 9 && \
     npm install --registry=https://registry.npm.taobao.org && npm run build
 RUN pip3 install -r ./requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple/
 
-ENV host="localhost" \
-    port=34765 \
-    url-prefix="localhost" \
-    oauth="" \
-    oauth-client-id="" \
-    oauth-client-secret="" \
-    db-host="localhost" \
-    db-name="cb4-production"
+ENV HOST="localhost" \
+    PORT=34765 \
+    URL_PREFIX="localhost" \
+    OAUTH="" \
+    OAUTH_CLIENT_ID="" \
+    OAUTH_CLIENT_SECRET="" \
+    DB_HOST="localhost" \
+    DB_NAME="cb4-production"
 
 EXPOSE $port
 
 CMD python3 -m vj4.server \
-    --listen=http://$host:$port \
-    --url-prefix=$url-prefix \
-    --oauth=$oauth \
-    --oauth-client-id=$oauth-client-id \
-    --oauth-client-secret=$oauth-client-secret \
-    --db-host=$db-host \
-    --db-name=$db-name
+    --listen=http://$HOST:$PORT \
+    --url-prefix=$URL_PREFIX \
+    --oauth=$OAUTH \
+    --oauth-client-id=$OAUTH_CLIENT_ID \
+    --oauth-client-secret=$OAUTH_CLIENT_SECRET \
+    --db-host=$DB_HOST \
+    --db-name=$DB_NAME
