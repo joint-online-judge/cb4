@@ -39,7 +39,7 @@ ENV HOST="localhost" \
     MQ_HOST="localhost" \
     MQ_VHOST="/"
 
-EXPOSE $port
+EXPOSE $PORT
 
 CMD python3 -m vj4.server \
     --listen=http://$HOST:$PORT \
