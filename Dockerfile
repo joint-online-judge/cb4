@@ -35,7 +35,9 @@ ENV HOST="localhost" \
     OAUTH_CLIENT_ID="" \
     OAUTH_CLIENT_SECRET="" \
     DB_HOST="localhost" \
-    DB_NAME="cb4-production"
+    DB_NAME="cb4-production" \
+    MQ_HOST="localhost" \
+    MQ_VHOST="/"
 
 EXPOSE $port
 
@@ -46,4 +48,6 @@ CMD python3 -m vj4.server \
     --oauth-client-id=$OAUTH_CLIENT_ID \
     --oauth-client-secret=$OAUTH_CLIENT_SECRET \
     --db-host=$DB_HOST \
-    --db-name=$DB_NAME
+    --db-name=$DB_NAME \
+    --mq-host=$MQ_HOST \
+    --mq_vhost=$MQ_VHOST

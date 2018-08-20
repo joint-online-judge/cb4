@@ -1,11 +1,14 @@
-import asyncio
-
 import aioamqp
+import asyncio
+import logging
+import time
 
 from vj4.util import options
 
 options.define('mq_host', default='localhost', help='Message queue hostname or IP address.')
 options.define('mq_vhost', default='/', help='Message queue virtual host.')
+
+_logger = logging.getLogger(__name__)
 
 _protocol_future = None
 _channel_futures = {}
@@ -40,16 +43,24 @@ async def channel(key=None):
       return await _channel_futures[key]
     future = asyncio.Future()
     _channel_futures[key] = future
-  try:
-    channel = await (await _connect()).channel()
-    if key:
-      future.set_result(channel)
-      asyncio.get_event_loop().create_task(_wait_channel(channel, key))
-    return channel
-  except Exception as e:
-    future.set_exception(e)
-    del _channel_futures[key]
-    raise
+  error_count = 0
+  while True:
+    try:
+      channel = await (await _connect()).channel()
+      if key:
+        future.set_result(channel)
+        asyncio.get_event_loop().create_task(_wait_channel(channel, key))
+      return channel
+    except Exception as e:
+      if error_count < 10:
+        error_count += 1
+        _logger.error(e.args)
+        _logger.error('Unable to connect rabbitmq, try again 5 seconds later (%d/10)' % error_count)
+        time.sleep(5)
+      else:
+        future.set_exception(e)
+        del _channel_futures[key]
+        raise
 
 
 async def _wait_channel(channel, key):

@@ -6,22 +6,27 @@ services:
     container_name: cb4
     depends_on:
       - mongo
-#      - rabbitmq
+      - rabbitmq
     ports:
       - 34765:34765
     privileged: true
     networks:
       - default
     environment:
-      db-host: mongo
+      DB_HOST: mongo
+      MQ_HOST: rabbitmq
   mongo:
     restart: always
-    image: mongo
+    image: mvertes/alpine-mongo
     container_name: mongo
     volumes:
       - ~/mongo_data:/data/db
-    expose:
-      - 27017
+    networks:
+      - default
+  rabbitmq:
+    restart: always
+    image: rabbitmq:alpine
+    container_name: rabbitmq
     networks:
       - default
 networks:
