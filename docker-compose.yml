@@ -8,13 +8,13 @@ services:
       - mongo
       - rabbitmq
     ports:
-      - 34765:34765
-    privileged: true
+      - "34765:34765"
     networks:
       - default
     environment:
       DB_HOST: mongo
       MQ_HOST: rabbitmq
+      HOST: cb4
   mongo:
     restart: always
     image: mvertes/alpine-mongo
