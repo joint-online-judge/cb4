@@ -21,6 +21,7 @@ COPY ./scripts /srv/cb4/scripts
 COPY ./vj4 /srv/cb4/vj4
 COPY ./.git /srv/cb4/.git
 COPY ./package.json ./requirements.txt /srv/cb4/
+COPY ./pm /usr/local/bin/
 WORKDIR /srv/cb4
 
 # Install python dependencies and build node modules
