@@ -17,7 +17,7 @@
 
 ***
 
-## Overview
+# Overview
 
 - Problem Categories and Tags
 - Solution Sharing & Voting
@@ -32,6 +32,34 @@
 - Sandboxed & Distributed Judging: see [jd4](https://github.com/vijos/jd4), [winjudge](https://github.com/iceb0y/winjudge) and [windows-container](https://github.com/iceb0y/windows-container)
 - Secure (we are also CTF players)
 - Modern Architecture & User Interface
+
+# Docker support
+
+## Prerequisites
+
+* [Docker CE 1.13.0+](https://docs.docker.com/install/)
+* [Docker Compose 1.22.0+](https://github.com/docker/compose/releases/)
+
+## Deployment
+
+First download the `docker-compose.yml` and `.env`
+
+```bash
+curl -L https://raw.githubusercontent.com/joint-online-judge/cb4/master/docker-compose.yml -o docker-compose.yml
+curl -L https://raw.githubusercontent.com/joint-online-judge/cb4/master/examples/docker-compose.env -o .env
+```
+
+After edit the `.env` file, run
+
+```bash
+docker-compose up -d
+```
+
+and the service will be started on port `34765` after a while.
+ (You can also modify the `docker-compose.yml` to change the port
+ or do something else.)
+
+# Run without Docker
 
 ## Prerequisites
 
@@ -141,7 +169,7 @@ python3 -m vj4.server --listen=unix:/var/run/vj4.sock
 
 Better to use a reverse proxy like Nginx or h2o.
 
-## Judging
+# Judging
 
 To enable vj4 to judge, at least one judge user and one judge daemon instance are needed.
 
@@ -153,9 +181,9 @@ pm vj4.model.user add -2 judge 123456 judge@example.org
 pm vj4.model.user set_judge -2
 ```
 
-* See https://github.com/vijos/jd4 for more details about the judge daemon.
+* See https://github.com/joint-online-judge/jd4 for more details about the judge daemon.
 
-## Notes
+# Notes
 
 Have fun!
 
@@ -165,7 +193,7 @@ Indentation: 2 spaces
 
 [JavaScript Style Guide](https://github.com/airbnb/javascript)
 
-## References
+# References
 
 * [aiohttp](http://aiohttp.readthedocs.org/en/stable/)
 * [Jinja2 Documentation](http://jinja.pocoo.org/docs/)

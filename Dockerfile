@@ -9,7 +9,7 @@ ENV HOME="/root"
 # Install dependencies
 COPY ./sources.list /etc/apt/
 RUN apt-get update && \
-    apt-get install -y python3-dev python3-pip curl git && \
+    apt-get install -y python3-dev python3-pip curl git mmdb-bin && \
     curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | bash
 
 # Install node.js
@@ -27,6 +27,9 @@ WORKDIR /srv/cb4
 RUN \. "$NVM_DIR/nvm.sh" && nvm use 9 && \
     npm install --registry=https://registry.npm.taobao.org && npm run build
 RUN pip3 install -r ./requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple/
+
+# Enable IP Geo-Location
+RUN curl "http://geolite.maxmind.com/download/geoip/database/GeoLite2-City.mmdb.gz" | gunzip -c > GeoLite2-City.mmdb
 
 ENV HOST="localhost" \
     PORT=34765 \
