@@ -15,6 +15,7 @@ services:
       DB_HOST: mongo
       MQ_HOST: rabbitmq
       HOST: cb4
+    env_file: .env
   mongo:
     restart: always
     image: mvertes/alpine-mongo

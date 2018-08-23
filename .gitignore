@@ -40,3 +40,4 @@ vj4/ui/static/locale
 config.yaml
 
 venv
+.env
