@@ -4,7 +4,7 @@ import Tooltip from './Tooltip';
 function getClosestTooltipElement(element) {
   const MAX_DEPTH = 3;
   for (let i = 0, e = element; i < MAX_DEPTH && e !== null && e !== document; e = e.parentNode, i++) {
-    if (e.getAttribute('data-tooltip')) {
+    if (e.getAttribute('data-has-timeago')) {
       return e;
     }
   }

@@ -15,6 +15,7 @@ function runRelativeTime($container) {
     }
     $element.attr('datetime', ($element.attr('data-timestamp') || 0) * 1000);
     $element.attr('data-has-timeago', '1');
+    $element.attr('data-tooltip', $element.text());
   });
 }
 
