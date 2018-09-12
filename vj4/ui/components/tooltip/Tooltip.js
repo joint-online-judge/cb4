@@ -13,7 +13,7 @@ export default class Tooltip extends DOMAttachedObject {
 
   constructor($dom, options = {}) {
     super($dom, true);
-    var tmpTime = $dom.get(0).cloneNode(false);
+    const tmpTime = $dom.get(0).cloneNode(false);
     timeago.render(tmpTime);
     this.dropRemoved = false;
     this.drop = new Drop({
@@ -23,10 +23,8 @@ export default class Tooltip extends DOMAttachedObject {
       openOn: 'hover',
       constrainToWindow: true,
       constrainToScrollParent: false,
-      content: tmpTime.innerHTML
+      content: tmpTime.innerHTML,
     });
-    
-
     this.isOpen = false;
     this.drop.on('open', this.onOpen, this);
     this.drop.on('close', this.onClose, this);
