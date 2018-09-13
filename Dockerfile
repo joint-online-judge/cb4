@@ -9,7 +9,7 @@ ENV HOME="/root"
 # Install dependencies
 COPY ./sources.list /etc/apt/
 RUN apt-get update && \
-    apt-get install -y python3-dev python3-pip curl git mmdb-bin && \
+    apt-get install -y python python3-dev python3-pip curl git mmdb-bin && \
     curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | bash
 
 # Install node.js
