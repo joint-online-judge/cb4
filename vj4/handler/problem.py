@@ -25,7 +25,7 @@ from vj4.model.adaptor import training
 from vj4.service import bus
 from vj4.util import pagination
 from vj4.util import options
-from vj4.util.misc import filter_language
+from vj4.util.misc import filter_language, filter_content_type
 
 async def render_or_json_problem_list(self, page, ppcount, pcount, pdocs,
                                       category, psdict, **kwargs):
@@ -209,12 +209,20 @@ class ProblemDetailHandler(base.Handler):
 @app.route('/p/{pid}/submit', 'problem_submit')
 class ProblemSubmitHandler(base.Handler):
   def get_content_type(self, filename):
-    extension = os.path.splitext(filename)[1].lower()
-    if extension == '.tar':
-      return 'application/x-tar'
-    # elif extension == '.tar.gz':
-    #   return 'application/x-compressed-tar'
-    raise error.FileTypeNotAllowedError(filename)
+    type, file_type = filter_content_type(filename, [
+      constant.record.FILE_TYPE_TAR,
+      constant.record.FILE_TYPE_ZIP
+    ])
+    self.file_type = file_type
+    return type
+    # extension = os.path.splitext(filename)[1].lower()
+    # if extension == '.tar':
+    #   return 'application/x-tar'
+    # if extension == '.zip':
+    #   return 'application/zip'
+    # # elif extension == '.tar.gz':
+    # #   return 'application/x-compressed-tar'
+    # raise error.FileTypeNotAllowedError(filename)
 
   @base.require_perm(builtin.PERM_SUBMIT_PROBLEM)
   @base.route_argument
@@ -267,9 +275,10 @@ class ProblemSubmitHandler(base.Handler):
     if pdoc.get('hidden', False):
       self.check_perm(builtin.PERM_VIEW_PROBLEM_HIDDEN)
 
-    # TODO(tc-imba): only constant.record.CODE_TYPE_TAR is supported now
+    # TODO(tc-imba): only constant.record.FILE_TYPE_TAR and constant.record.FILE_TYPE_ZIP is supported now
+    code_type = self.file_type or constant.record.FILE_TYPE_TEXT
     rid = await record.add(self.domain_id, pdoc['doc_id'], constant.record.TYPE_SUBMISSION,
-                           self.user['_id'], lang, code, code_type=constant.record.CODE_TYPE_TAR)
+                           self.user['_id'], lang, code, code_type=code_type)
     self.json_or_redirect(self.reverse_url('record_detail', rid=rid))
 
 

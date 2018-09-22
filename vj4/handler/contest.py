@@ -23,7 +23,7 @@ from vj4.model.adaptor import contest
 from vj4.model.adaptor import problem
 from vj4.handler import base
 from vj4.util import pagination
-from vj4.util.misc import filter_language
+from vj4.util.misc import filter_language, filter_content_type
 
 
 def _parse_pids(pids_str):
@@ -363,10 +363,12 @@ class ContestDetailProblemHandler(ContestMixin, ContestPageCategoryMixin, base.H
 @app.route('/{ctype:contest|homework}/{tid}/{pid}/submit', 'contest_detail_problem_submit')
 class ContestDetailProblemSubmitHandler(ContestMixin, ContestPageCategoryMixin, base.Handler):
   def get_content_type(self, filename):
-    extension = os.path.splitext(filename)[1].lower()
-    if extension == '.tar':
-      return 'application/x-tar'
-    raise error.FileTypeNotAllowedError(filename)
+    type, file_type = filter_content_type(filename, [
+      constant.record.FILE_TYPE_TAR,
+      constant.record.FILE_TYPE_ZIP
+    ])
+    self.file_type = file_type
+    return type
 
   @base.route_argument
   @base.sanitize
@@ -456,10 +458,13 @@ class ContestDetailProblemSubmitHandler(ContestMixin, ContestPageCategoryMixin, 
         raise error.InvalidArgumentError('ctype')
     if pid not in tdoc['pids']:
       raise error.ProblemNotFoundError(self.domain_id, pid, tdoc['doc_id'])
-    # TODO(tc-imba): only constant.record.CODE_TYPE_TAR is supported now
+
+    # TODO(tc-imba): only constant.record.FILE_TYPE_TAR and constant.record.FILE_TYPE_ZIP is supported now
+    code_type = self.file_type or constant.record.FILE_TYPE_TEXT
     rid = await record.add(self.domain_id, pdoc['doc_id'], constant.record.TYPE_SUBMISSION,
                            self.user['_id'], lang, code, tid=tdoc['doc_id'], hidden=False,
-                           code_type=constant.record.CODE_TYPE_TAR)
+                           code_type=code_type)
+
     await contest.update_status(self.domain_id, tdoc['doc_id'], self.user['_id'],
                                 rid, pdoc['doc_id'], False, 0)
     if not self.can_show_record(tdoc):

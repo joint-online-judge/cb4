@@ -2,6 +2,7 @@ import base64
 import hashlib
 import hoedown
 import jinja2
+import mimetypes
 import markupsafe
 import re
 from urllib import parse
@@ -9,6 +10,7 @@ from collections import OrderedDict
 
 from vj4.util import options
 from vj4 import constant
+from vj4 import error
 
 MARKDOWN_EXTENSIONS = (hoedown.EXT_TABLES |  # Parse PHP-Markdown style tables.
                        hoedown.EXT_FENCED_CODE |  # Parse fenced code blocks.
@@ -121,3 +123,21 @@ def filter_language(languages: list):
     if lang_text:
       dic[lang] = lang_text
   return dic
+
+
+def get_content_type(filename: str):
+  type, encoding = mimetypes.guess_type(filename)
+  return type
+
+
+def filter_content_type(filename: str, file_types: list):
+  type = get_content_type(filename)
+  if not type:
+    raise error.FileTypeNotAllowedError(filename)
+  suffix = mimetypes.guess_extension(type)
+  file_type = constant.record.FILE_TYPE_FROM_SUFFIX.get(suffix)
+  if not file_type:
+    raise error.FileTypeNotAllowedError(filename)
+  if file_type not in file_types:
+    raise error.FileTypeNotAllowedError(filename)
+  return type, file_type

@@ -22,7 +22,7 @@ PROJECTION_ALL = None
 async def add(domain_id: str, pid: document.convert_doc_id, type: int, uid: int, lang: str,
               code: Union[str, objectid.ObjectId], data_id: objectid.ObjectId = None,
               tid: objectid.ObjectId = None, hidden=False,
-              code_type=constant.record.CODE_TYPE_TEXT, judge_category=[]):
+              code_type=constant.record.FILE_TYPE_TEXT, judge_category=[]):
   validator.check_lang(lang)
   coll = db.coll('record')
   doc = {'hidden': hidden,

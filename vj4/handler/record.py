@@ -245,7 +245,7 @@ class RecordCodeHandler(base.Handler):
       raise error.RecordNotFoundError(rid)
     if not self.own(rdoc, field='uid') and not self.has_priv(builtin.PRIV_READ_RECORD_CODE):
       self.check_perm(builtin.PERM_READ_RECORD_CODE)
-    if not rdoc.get('code') or rdoc['code_type'] == constant.record.CODE_TYPE_TEXT:
+    if not rdoc.get('code') or rdoc['code_type'] == constant.record.FILE_TYPE_TEXT:
       raise error.RecordDataNotFoundError(rdoc['_id'])
     secret = await fs.get_secret(rdoc['code'])
     if not secret:
