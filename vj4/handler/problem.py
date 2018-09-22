@@ -211,7 +211,8 @@ class ProblemSubmitHandler(base.Handler):
   def get_content_type(self, filename):
     type, file_type = filter_content_type(filename, [
       constant.record.FILE_TYPE_TAR,
-      constant.record.FILE_TYPE_ZIP
+      constant.record.FILE_TYPE_ZIP,
+      constant.record.FILE_TYPE_RAR
     ])
     self.file_type = file_type
     return type

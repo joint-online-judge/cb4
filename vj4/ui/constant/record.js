@@ -23,6 +23,7 @@ export const TYPE_PRETEST = 1;
 export const FILE_TYPE_TEXT = 0;
 export const FILE_TYPE_TAR = 1;
 export const FILE_TYPE_ZIP = 2;
+export const FILE_TYPE_RAR = 3;
 
 export const STATUS_TEXTS = {
   [STATUS_WAITING]: 'Waiting',
@@ -104,12 +105,14 @@ attachObjectMeta(TYPE_TEXTS, 'intKey', true);
 export const FILE_TYPE_FROM_SUFFIX = {
   '.tar': FILE_TYPE_TAR,
   '.zip': FILE_TYPE_ZIP,
+  '.rar': FILE_TYPE_RAR,
 };
 
 export const FILE_TYPE_TEXTS = {
   [FILE_TYPE_TEXT]: 'Text',
   [FILE_TYPE_TAR]: 'Tarball',
   [FILE_TYPE_ZIP]: 'Zip File',
+  [FILE_TYPE_RAR]: 'Rar File',
 };
 attachObjectMeta(FILE_TYPE_TEXTS, 'intKey', true);
 
