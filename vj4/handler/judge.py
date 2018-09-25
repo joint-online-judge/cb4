@@ -172,6 +172,7 @@ class JudgeNotifyConnection(base.Connection):
           'time_ms': int(kwargs['case']['time_ms']),
           'memory_kb': int(kwargs['case']['memory_kb']),
           'judge_text': str(kwargs['case']['judge_text']),
+          'execute_status': int(kwargs['case']['execute_status'])
         }
       if 'progress' in kwargs:
         update.setdefault('$set', {})['progress'] = float(kwargs['progress'])
