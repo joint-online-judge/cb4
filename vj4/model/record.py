@@ -21,11 +21,12 @@ PROJECTION_ALL = None
 @argmethod.wrap
 async def add(domain_id: str, pid: document.convert_doc_id, type: int, uid: int, lang: str,
               code: Union[str, objectid.ObjectId], data_id: objectid.ObjectId = None,
-              tid: objectid.ObjectId = None, hidden=False,
+              tid: objectid.ObjectId = None, hidden=False, show_detail=False,
               code_type=constant.record.FILE_TYPE_TEXT, judge_category=[]):
   validator.check_lang(lang)
   coll = db.coll('record')
   doc = {'hidden': hidden,
+         'show_detail': show_detail,
          'status': constant.record.STATUS_WAITING,
          'score': 0,
          'time_ms': 0,
@@ -54,6 +55,7 @@ async def add(domain_id: str, pid: document.convert_doc_id, type: int, uid: int,
 async def system_test(rdoc, judge_category):
   coll = db.coll('record')
   doc = {'hidden': rdoc['hidden'],
+         'show_detail': rdoc['show_detail'],
          'status': constant.record.STATUS_WAITING,
          'score': 0,
          'time_ms': 0,

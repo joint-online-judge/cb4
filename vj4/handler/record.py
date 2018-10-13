@@ -27,9 +27,9 @@ class RecordVisibilityMixin(contest_handler.ContestVisibilityMixin):
     tdoc = await contest.get(rdoc['domain_id'], {'$in': [document.TYPE_CONTEST, document.TYPE_HOMEWORK]}, rdoc['tid'])
     return self.can_show_record(tdoc), tdoc
 
-  def case_detail_visible(self, pdoc):
+  def case_detail_visible(self, rdoc):
     return self.has_perm(builtin.PERM_READ_RECORD_DETAIL) \
-           or (pdoc and 'show_case_detail' in pdoc and pdoc['show_case_detail'])
+           or ('show_detail' in rdoc and rdoc['show_detail'])
 
 class RecordCommonOperationMixin(object):
   async def get_filter_query(self, uid_or_name, pid, tid):
@@ -168,8 +168,7 @@ class RecordDetailHandler(RecordMixin, base.Handler):
     # check permission for visibility: hidden problem
     if pdoc.get('hidden', False) and not self.has_perm(builtin.PERM_VIEW_PROBLEM_HIDDEN):
       pdoc = None
-    show_detail = self.case_detail_visible(pdoc)
-    print(show_detail)
+    show_detail = self.case_detail_visible(rdoc)
     url_prefix = '/d/{}'.format(urllib.parse.quote(self.domain_id))
     self.render('record_detail.html', rdoc=rdoc, udoc=udoc, dudoc=dudoc, pdoc=pdoc, tdoc=tdoc,
                 judge_udoc=judge_udoc, show_status=show_status, show_detail=show_detail,
@@ -188,24 +187,16 @@ class RecordDetailConnection(RecordMixin, base.Connection):
         self.close()
         return
     bus.subscribe(self.on_record_change, ['record_change'])
-    try:
-      pdoc = await problem.get(rdoc['domain_id'], rdoc['pid'])
-    except error.ProblemNotFoundError:
-      pdoc = None
-    self.send_record(rdoc, pdoc)
+    self.send_record(rdoc)
 
   async def on_record_change(self, e):
     rdoc = e['value']
     if rdoc['_id'] != self.rid:
       return
-    try:
-      pdoc = await problem.get(rdoc['domain_id'], rdoc['pid'])
-    except error.ProblemNotFoundError:
-      pdoc = None
-    await self.send_record(rdoc, pdoc)
+    self.send_record(rdoc)
 
-  def send_record(self, rdoc, pdoc):
-    show_detail = self.case_detail_visible(pdoc)
+  def send_record(self, rdoc):
+    show_detail = self.case_detail_visible(rdoc)
     self.send(status_html=self.render_html('record_detail_status.html', rdoc=rdoc, show_detail=show_detail),
               summary_html=self.render_html('record_detail_summary.html', rdoc=rdoc))
 
@@ -231,16 +222,8 @@ class RecordCaseDetailHandler(RecordMixin, base.Handler):
       raise error.RecordCaseNotFoundError(rdoc['_id'], cid)
 
     rcdoc = rdoc['cases'][cid - 1]
+    show_detail = self.case_detail_visible(rdoc)
 
-    try:
-      pdoc = await problem.get(rdoc['domain_id'], rdoc['pid'])
-    except error.ProblemNotFoundError:
-      pdoc = {}
-    # check permission for visibility: hidden problem
-    if pdoc.get('hidden', False) and not self.has_perm(builtin.PERM_VIEW_PROBLEM_HIDDEN):
-      pdoc = None
-
-    show_detail = self.case_detail_visible(pdoc)
     if not show_detail:
       raise error.RecordCaseNotAvailableError(rdoc['_id'])
 

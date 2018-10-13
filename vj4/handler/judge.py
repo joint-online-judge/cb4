@@ -151,7 +151,7 @@ class JudgeNotifyConnection(base.Connection):
       self.rids[tag] = rdoc['_id']
       self.send(rid=str(rdoc['_id']), tag=tag, pid=str(rdoc['pid']), domain_id=rdoc['domain_id'],
                 lang=rdoc['lang'], code=str(rdoc['code']), type=rdoc['type'], code_type=rdoc['code_type'],
-                judge_category=','.join(rdoc['judge_category']))
+                judge_category=','.join(rdoc['judge_category']), show_detail=rdoc['show_detail'])
       bus.publish_throttle('record_change', rdoc, rdoc['_id'])
     else:
       # Record not found, eat it.
