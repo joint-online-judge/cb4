@@ -1,0 +1,67 @@
+{% extends "layout/basic.html" %}
+{% import "components/problem.html" as problem with context %}
+{% block content %}
+  {#<script>
+  var Context = {{ {
+    'socketUrl': socket_url,
+  }|json|safe }};
+</script>#}
+  <div class="row">
+    <div class="medium-12 columns">
+      <div class="section visible" id="status">
+        <div class="section__header">
+          <h1 class="section__title">
+            Notes
+          </h1>
+        </div>
+        <div class="section__body typo">
+          This function is in alpha test. Please help improve it in the issues
+          <a href="https://github.com/joint-online-judge/cb4/issues/22" target="_blank">here</a>.
+        </div>
+      </div>
+    </div>
+    <div class="medium-12 columns">
+      <div class="section visible" id="status">
+        <div class="section__header">
+          <h1 class="section__title">
+            <span
+                class="icon record-status--icon {{ vj4.constant.record.STATUS_CODES[vj4.constant.record.STATUS_JUDGING] }}"></span>
+            <span
+                class="record-status--text {{ vj4.constant.record.STATUS_CODES[vj4.constant.record.STATUS_JUDGING] }}">Stderr</span>
+          </h1>
+        </div>
+        <div class="section__body">
+          <pre class="compiler-text">{{ rcdoc['stderr'] }}</pre>
+        </div>
+      </div>
+    </div>
+    <div class="medium-6 columns">
+      <div class="section visible" id="status">
+        <div class="section__header">
+          <h1 class="section__title">
+            <span class="icon record-status--icon {{ vj4.constant.record.STATUS_CODES[rcdoc['status']] }}"></span>
+            <span class="record-status--text {{ vj4.constant.record.STATUS_CODES[rcdoc['status']] }}">Your Answer</span>
+          </h1>
+        </div>
+        <div class="section__body">
+          <pre class="compiler-text">{{ rcdoc['stdout'] }}</pre>
+        </div>
+      </div>
+    </div>
+    <div class="medium-6 columns">
+      <div class="section visible" id="status">
+        <div class="section__header">
+          <h1 class="section__title">
+            <span
+                class="icon record-status--icon {{ vj4.constant.record.STATUS_CODES[vj4.constant.record.STATUS_ACCEPTED] }}"></span>
+            <span
+                class="record-status--text {{ vj4.constant.record.STATUS_CODES[vj4.constant.record.STATUS_ACCEPTED] }}">JOJ Answer</span>
+          </h1>
+        </div>
+        <div class="section__body">
+          <pre class="compiler-text">{{ rcdoc['answer'] }}</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

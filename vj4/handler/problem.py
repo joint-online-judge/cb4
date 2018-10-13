@@ -558,9 +558,9 @@ class ProblemCreateHandler(base.Handler):
   @base.post_argument
   @base.require_csrf_token
   @base.sanitize
-  async def post(self, *, title: str, content: str, hidden: bool=False):
+  async def post(self, *, title: str, content: str, hidden: bool=False, show_case_detail: bool=False):
     pid = await problem.add(self.domain_id, title, content, self.user['_id'],
-                            hidden=hidden)
+                            hidden=hidden, show_case_detail=show_case_detail)
     self.json_or_redirect(self.reverse_url('problem_settings', pid=pid))
 
 
@@ -622,7 +622,7 @@ class ProblemSettingsHandler(base.Handler):
   @base.multi_post_argument
   @base.require_csrf_token
   @base.sanitize
-  async def post(self, *, pid: document.convert_doc_id, hidden: bool=False,
+  async def post(self, *, pid: document.convert_doc_id, hidden: bool=False, show_case_detail: bool=False,
                  category: str, tag: str, languages: list,
                  difficulty_setting: int, difficulty_admin: str=''):
     pdoc = await problem.get(self.domain_id, pid)
@@ -648,7 +648,7 @@ class ProblemSettingsHandler(base.Handler):
           raise error.ValidationError('difficulty_admin')
     else:
       difficulty_admin = None
-    await problem.edit(self.domain_id, pdoc['doc_id'], hidden=hidden,
+    await problem.edit(self.domain_id, pdoc['doc_id'], hidden=hidden, show_case_detail=show_case_detail,
                        category=category, tag=tag, languages=languages,
                        difficulty_setting=difficulty_setting, difficulty_admin=difficulty_admin)
     await job.difficulty.update_problem(self.domain_id, pdoc['doc_id'])

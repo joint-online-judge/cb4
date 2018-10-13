@@ -238,6 +238,7 @@ problem_settings: 题目设置
 problem_statistics: 题目统计
 record_detail: 记录详情
 record_main: 评测队列
+record_detail_case: 记录数据详情
 reply: 回复
 setting_usage: 使用偏好
 setting_info: 个人信息

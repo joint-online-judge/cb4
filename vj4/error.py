@@ -93,6 +93,7 @@ class InvalidTokenError(ForbiddenError):
 
 class VerifyPasswordError(ForbiddenError):
   """Error with the `verify password', not password verification error."""
+
   @property
   def message(self):
     return "Passwords don't match."
@@ -318,6 +319,18 @@ class RecordNotFoundError(NotFoundError):
   @property
   def message(self):
     return 'Record {0} not found.'
+
+
+class RecordCaseNotFoundError(NotFoundError):
+  @property
+  def message(self):
+    return 'Record {0} Test Case {1} not found.'
+
+
+class RecordCaseNotAvailableError(NotFoundError):
+  @property
+  def message(self):
+    return 'Record {0} Details not opened to public.'
 
 
 class OpcountExceededError(ForbiddenError):

@@ -23,6 +23,7 @@ problem_settings: Problem Settings
 problem_statistics: Problem Statistics
 record_detail: Record Detail
 record_main: Judging Queue
+record_detail_case: Record Case Detail
 setting_function: Function
 setting_info: Personal Info
 setting_preference: Preference

@@ -120,6 +120,7 @@ async def check_password_by_uname(uname: str, password: str, auto_upgrade: bool=
     return doc
 
 
+
 @argmethod.wrap
 async def set_password(uid: int, password: str):
   """Set password. Returns doc or None."""

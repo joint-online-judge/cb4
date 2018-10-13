@@ -120,7 +120,9 @@ class JudgeScoreHandler(base.Handler):
       'score': score,
       'time_ms': 0,
       'memory_kb': 0,
-      'judge_text': message,
+      'stderr': message,
+      'stdout': '',
+      'answer': '',
     }
     await record.next_judge(rid, self.user['_id'], self.user['_id'], **update)
     rdoc = await record.end_judge(rid, self.user['_id'], self.user['_id'],
@@ -171,7 +173,9 @@ class JudgeNotifyConnection(base.Connection):
           'score': int(kwargs['case']['score']),
           'time_ms': int(kwargs['case']['time_ms']),
           'memory_kb': int(kwargs['case']['memory_kb']),
-          'judge_text': str(kwargs['case']['judge_text']),
+          'stdout': str(kwargs['case']['stdout']),
+          'stderr': str(kwargs['case']['stderr']),
+          'answer': str(kwargs['case']['answer']),
           'execute_status': int(kwargs['case']['execute_status'])
         }
       if 'progress' in kwargs:
