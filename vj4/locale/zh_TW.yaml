@@ -232,6 +232,7 @@ problem_submit: 遞交程式碼
 problem_settings: 題目設定
 record_detail: 記錄詳情
 record_main: 評測佇列
+record_detail_case: 記錄數據詳情
 reply: 回覆
 setting_usage: 使用偏好
 setting_info: 個人資訊

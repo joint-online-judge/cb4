@@ -50,7 +50,7 @@
               <span> ({{ rcdoc['execute_status'] }}) </span>
             {% endif %}
             {% if show_detail %}
-              <a href="{{ reverse_url('wiki_help') }}">Detail</a>
+              <a href="{{ reverse_url('record_detail_case', rid=rdoc['_id'], cid=loop.index) }}">Detail</a>
             {% endif %}
 {#            <span>{{ rcdoc['judge_text'] }}</span>#}
           </td>
