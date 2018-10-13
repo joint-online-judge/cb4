@@ -27,6 +27,7 @@ PERM_READ_PROBLEM_DATA_SELF = 1 << 11
 PERM_READ_RECORD_CODE = 1 << 12
 PERM_REJUDGE_PROBLEM = 1 << 13
 PERM_REJUDGE = 1 << 14
+PERM_READ_RECORD_DETAIL = 1 << 59
 
 # Problem Solution.
 PERM_VIEW_PROBLEM_SOLUTION = 1 << 15
@@ -101,6 +102,7 @@ PERMS = [
     Permission('perm_problem', PERM_READ_PROBLEM_DATA, 'Read data of problem'),
     Permission('perm_problem', PERM_READ_PROBLEM_DATA_SELF, 'Read data of own problems'),
     Permission('perm_record', PERM_READ_RECORD_CODE, 'Read record codes'),
+    Permission('perm_record', PERM_READ_RECORD_DETAIL, 'Read record details'),
     Permission('perm_record', PERM_REJUDGE_PROBLEM, 'Rejudge problems'),
     Permission('perm_record', PERM_REJUDGE, 'Rejudge records'),
     Permission('perm_problem_solution', PERM_VIEW_PROBLEM_SOLUTION, 'View problem solutions'),

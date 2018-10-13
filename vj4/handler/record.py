@@ -165,9 +165,10 @@ class RecordDetailHandler(RecordMixin, base.Handler):
     # check permission for visibility: hidden problem
     if pdoc.get('hidden', False) and not self.has_perm(builtin.PERM_VIEW_PROBLEM_HIDDEN):
       pdoc = None
+    show_detail = self.has_perm(builtin.PERM_READ_RECORD_DETAIL)
     url_prefix = '/d/{}'.format(urllib.parse.quote(self.domain_id))
     self.render('record_detail.html', rdoc=rdoc, udoc=udoc, dudoc=dudoc, pdoc=pdoc, tdoc=tdoc,
-                judge_udoc=judge_udoc, show_status=show_status,
+                judge_udoc=judge_udoc, show_status=show_status, show_detail=show_detail,
                 socket_url=url_prefix + '/records/{}/conn'.format(rid))  # FIXME(twd2): magic
 
 
@@ -192,7 +193,8 @@ class RecordDetailConnection(RecordMixin, base.Connection):
     self.send_record(rdoc)
 
   def send_record(self, rdoc):
-    self.send(status_html=self.render_html('record_detail_status.html', rdoc=rdoc),
+    show_detail = self.has_perm(builtin.PERM_READ_RECORD_DETAIL)
+    self.send(status_html=self.render_html('record_detail_status.html', rdoc=rdoc, show_detail=show_detail),
               summary_html=self.render_html('record_detail_summary.html', rdoc=rdoc))
 
   async def on_close(self):

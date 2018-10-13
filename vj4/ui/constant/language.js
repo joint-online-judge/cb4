@@ -1,6 +1,7 @@
 import attachObjectMeta from './util/objectMeta';
 
 export const LANG_TEXTS = {
+  other: 'Other',
   c: 'C',
   cc: 'C++',
   'llvm-c': 'C (Clang, with memory check)',
@@ -22,6 +23,7 @@ export const LANG_TEXTS = {
 };
 
 export const LANG_HIGHLIGHT_ID = {
+  other: 'other',
   c: 'c',
   cc: 'cpp',
   'llvm-c': 'c',
@@ -43,6 +45,7 @@ export const LANG_HIGHLIGHT_ID = {
 };
 
 export const LANG_CODEMIRROR_MODES = {
+  other: 'text/x-sh',
   c: 'text/x-csrc',
   cc: 'text/x-c++src',
   'llvm-c': 'text/x-csrc',
