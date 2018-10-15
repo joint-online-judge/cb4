@@ -57,7 +57,7 @@ class ProblemMainHandler(base.OperationHandler):
   @base.require_perm(builtin.PERM_VIEW_PROBLEM)
   @base.get_argument
   @base.sanitize
-  async def get(self, *, page: int=1):
+  async def get(self, *, page: int = 1):
     # TODO(iceboy): projection.
     if not self.has_perm(builtin.PERM_VIEW_PROBLEM_HIDDEN):
       f = {'hidden': False}
@@ -65,7 +65,7 @@ class ProblemMainHandler(base.OperationHandler):
       f = {}
     pdocs, ppcount, pcount = await pagination.paginate(problem.get_multi(domain_id=self.domain_id,
                                                                          **f) \
-                                                              .sort([('doc_id', 1)]),
+                                                       .sort([('doc_id', 1)]),
                                                        page, self.PROBLEMS_PER_PAGE)
     if self.has_priv(builtin.PRIV_USER_PROFILE):
       # TODO(iceboy): projection.
@@ -126,7 +126,7 @@ class ProblemCategoryHandler(base.OperationHandler):
       sub_query = {'$and': []}
       for c in categories:
         if c in builtin.PROBLEM_CATEGORIES \
-           or c in builtin.PROBLEM_SUB_CATEGORIES:
+            or c in builtin.PROBLEM_SUB_CATEGORIES:
           sub_query['$and'].append({'category': c})
         else:
           sub_query['$and'].append({'tag': c})
@@ -137,7 +137,7 @@ class ProblemCategoryHandler(base.OperationHandler):
   @base.get_argument
   @base.route_argument
   @base.sanitize
-  async def get(self, *, category: str, page: int=1):
+  async def get(self, *, category: str, page: int = 1):
     # TODO(iceboy): projection.
     if not self.has_perm(builtin.PERM_VIEW_PROBLEM_HIDDEN):
       f = {'hidden': False}
@@ -147,7 +147,7 @@ class ProblemCategoryHandler(base.OperationHandler):
     pdocs, ppcount, pcount = await pagination.paginate(problem.get_multi(domain_id=self.domain_id,
                                                                          **query,
                                                                          **f) \
-                                                              .sort([('doc_id', 1)]),
+                                                       .sort([('doc_id', 1)]),
                                                        page, self.PROBLEMS_PER_PAGE)
     if self.has_priv(builtin.PRIV_USER_PROFILE):
       # TODO(iceboy): projection.
@@ -158,8 +158,8 @@ class ProblemCategoryHandler(base.OperationHandler):
       psdict = None
     page_title = category or self.translate('(All Problems)')
     path_components = self.build_path(
-        (self.translate('problem_main'), self.reverse_url('problem_main')),
-        (page_title, None))
+      (self.translate('problem_main'), self.reverse_url('problem_main')),
+      (page_title, None))
     await render_or_json_problem_list(self, page=page, ppcount=ppcount, pcount=pcount,
                                       pdocs=pdocs, category=category, psdict=psdict,
                                       page_title=page_title, path_components=path_components)
@@ -196,12 +196,12 @@ class ProblemDetailHandler(base.Handler):
       self.check_perm(builtin.PERM_VIEW_PROBLEM_HIDDEN)
     udoc = await user.get_by_uid(pdoc['owner_uid'])
     tdocs = await training.get_multi(self.domain_id, **{'dag.pids': pid}).to_list() \
-            if self.has_perm(builtin.PERM_VIEW_TRAINING) else None
+      if self.has_perm(builtin.PERM_VIEW_TRAINING) else None
     ctdocs = await contest.get_multi(self.domain_id, document.TYPE_CONTEST, pids=pid).to_list() \
-             if self.has_perm(builtin.PERM_VIEW_CONTEST) else None
+      if self.has_perm(builtin.PERM_VIEW_CONTEST) else None
     path_components = self.build_path(
-        (self.translate('problem_main'), self.reverse_url('problem_main')),
-        (pdoc['title'], None))
+      (self.translate('problem_main'), self.reverse_url('problem_main')),
+      (pdoc['title'], None))
     self.render('problem_detail.html', pdoc=pdoc, udoc=udoc, tdocs=tdocs, ctdocs=ctdocs,
                 page_title=pdoc['title'], path_components=path_components)
 
@@ -240,15 +240,15 @@ class ProblemSubmitHandler(base.Handler):
     else:
       # TODO(iceboy): needs to be in sync with contest_detail_problem_submit
       rdocs = await record \
-          .get_user_in_problem_multi(uid, self.domain_id, pdoc['doc_id']) \
-          .sort([('_id', -1)]) \
-          .limit(10) \
-          .to_list()
+        .get_user_in_problem_multi(uid, self.domain_id, pdoc['doc_id']) \
+        .sort([('_id', -1)]) \
+        .limit(10) \
+        .to_list()
     if not self.prefer_json:
       path_components = self.build_path(
-          (self.translate('problem_main'), self.reverse_url('problem_main')),
-          (pdoc['title'], self.reverse_url('problem_detail', pid=pdoc['doc_id'])),
-          (self.translate('problem_submit'), None))
+        (self.translate('problem_main'), self.reverse_url('problem_main')),
+        (pdoc['title'], self.reverse_url('problem_detail', pid=pdoc['doc_id'])),
+        (self.translate('problem_submit'), None))
       # print(constant.language.LANG_TEXTS.items())
       languages = filter_language(pdoc.get('languages') or [])
       default_lang = len(languages) and list(languages.keys())[0] or ''
@@ -265,12 +265,11 @@ class ProblemSubmitHandler(base.Handler):
   @base.require_csrf_token
   @base.sanitize
   @base.limit_rate('add_record', 60, 100)
+  @base.limit_file_size('code', 2)
   async def post(self, *, pid: document.convert_doc_id, lang: str, code: objectid.ObjectId):
     # TODO(twd2): check status, eg. test, hidden problem, ...
 
-    # TODO(tc-imba): check file size
-    # file_info = await fs.get(code)
-    # print(file_info.length)
+    # TODO(tc-imba) add the file size limit as a setting
 
     pdoc = await problem.get(self.domain_id, pid)
     if pdoc.get('hidden', False):
@@ -330,7 +329,7 @@ class ProblemPretestConnection(record_handler.RecordVisibilityMixin, base.Connec
   async def on_record_change(self, e):
     rdoc = e['value']
     if rdoc['uid'] != self.user['_id'] or \
-       rdoc['domain_id'] != self.domain_id or rdoc['pid'] != self.pid:
+        rdoc['domain_id'] != self.domain_id or rdoc['pid'] != self.pid:
       return
     # check permission for visibility: contest
     if rdoc['tid']:
@@ -351,29 +350,29 @@ class ProblemSolutionHandler(base.OperationHandler):
   @base.get_argument
   @base.route_argument
   @base.sanitize
-  async def get(self, *, pid: document.convert_doc_id, page: int=1):
+  async def get(self, *, pid: document.convert_doc_id, page: int = 1):
     uid = self.user['_id'] if self.has_priv(builtin.PRIV_USER_PROFILE) else None
     pdoc = await problem.get(self.domain_id, pid, uid)
     if pdoc.get('hidden', False):
       self.check_perm(builtin.PERM_VIEW_PROBLEM_HIDDEN)
     psdocs, pcount, pscount = await pagination.paginate(
-        problem.get_multi_solution(self.domain_id, pdoc['doc_id']),
-        page, self.SOLUTIONS_PER_PAGE)
+      problem.get_multi_solution(self.domain_id, pdoc['doc_id']),
+      page, self.SOLUTIONS_PER_PAGE)
     uids = {pdoc['owner_uid']}
     uids.update(psdoc['owner_uid'] for psdoc in psdocs)
     for psdoc in psdocs:
       if 'reply' in psdoc:
         uids.update(psrdoc['owner_uid'] for psrdoc in psdoc['reply'])
     udict, dudict, pssdict = await asyncio.gather(
-        user.get_dict(uids),
-        domain.get_dict_user_by_uid(self.domain_id, uids),
-        problem.get_dict_solution_status(
-            self.domain_id, (psdoc['doc_id'] for psdoc in psdocs), self.user['_id']))
+      user.get_dict(uids),
+      domain.get_dict_user_by_uid(self.domain_id, uids),
+      problem.get_dict_solution_status(
+        self.domain_id, (psdoc['doc_id'] for psdoc in psdocs), self.user['_id']))
     dudict[self.user['_id']] = self.domain_user
     path_components = self.build_path(
-        (self.translate('problem_main'), self.reverse_url('problem_main')),
-        (pdoc['title'], self.reverse_url('problem_detail', pid=pdoc['doc_id'])),
-        (self.translate('problem_solution'), None))
+      (self.translate('problem_main'), self.reverse_url('problem_main')),
+      (pdoc['title'], self.reverse_url('problem_detail', pid=pdoc['doc_id'])),
+      (self.translate('problem_solution'), None))
     self.render('problem_solution.html', path_components=path_components,
                 pdoc=pdoc, psdocs=psdocs, page=page, pcount=pcount, pscount=pscount,
                 udict=udict, dudict=dudict, pssdict=pssdict)
@@ -445,7 +444,7 @@ class ProblemSolutionHandler(base.OperationHandler):
   @base.require_csrf_token
   @base.sanitize
   async def post_delete_reply(self, *, pid: document.convert_doc_id,
-                            psid: document.convert_doc_id, psrid: document.convert_doc_id):
+                              psid: document.convert_doc_id, psrid: document.convert_doc_id):
     pdoc = await problem.get(self.domain_id, pid)
     if pdoc.get('hidden', False):
       self.check_perm(builtin.PERM_VIEW_PROBLEM_HIDDEN)
@@ -559,7 +558,7 @@ class ProblemCreateHandler(base.Handler):
   @base.post_argument
   @base.require_csrf_token
   @base.sanitize
-  async def post(self, *, title: str, content: str, hidden: bool=False, show_case_detail: bool=False):
+  async def post(self, *, title: str, content: str, hidden: bool = False, show_case_detail: bool = False):
     pid = await problem.add(self.domain_id, title, content, self.user['_id'],
                             hidden=hidden, show_case_detail=show_case_detail)
     self.json_or_redirect(self.reverse_url('problem_settings', pid=pid))
@@ -577,9 +576,9 @@ class ProblemEditHandler(base.Handler):
       self.check_perm(builtin.PERM_EDIT_PROBLEM)
     udoc = await user.get_by_uid(pdoc['owner_uid'])
     path_components = self.build_path(
-        (self.translate('problem_main'), self.reverse_url('problem_main')),
-        (pdoc['title'], self.reverse_url('problem_detail', pid=pdoc['doc_id'])),
-        (self.translate('problem_edit'), None))
+      (self.translate('problem_main'), self.reverse_url('problem_main')),
+      (pdoc['title'], self.reverse_url('problem_detail', pid=pdoc['doc_id'])),
+      (self.translate('problem_edit'), None))
     self.render('problem_edit.html', pdoc=pdoc, udoc=udoc,
                 page_title=pdoc['title'], path_components=path_components)
 
@@ -608,14 +607,14 @@ class ProblemSettingsHandler(base.Handler):
       self.check_perm(builtin.PERM_EDIT_PROBLEM)
     udoc = await user.get_by_uid(pdoc['owner_uid'])
     path_components = self.build_path(
-        (self.translate('problem_main'), self.reverse_url('problem_main')),
-        (pdoc['title'], self.reverse_url('problem_detail', pid=pdoc['doc_id'])),
-        (self.translate('problem_settings'), None))
+      (self.translate('problem_main'), self.reverse_url('problem_main')),
+      (pdoc['title'], self.reverse_url('problem_detail', pid=pdoc['doc_id'])),
+      (self.translate('problem_settings'), None))
     self.render('problem_settings.html', pdoc=pdoc, udoc=udoc, categories=problem.get_categories(),
                 page_title=pdoc['title'], path_components=path_components)
 
   def split_tags(self, s):
-    s = s.replace('，', ',') # Chinese ', '
+    s = s.replace('，', ',')  # Chinese ', '
     return list(filter(lambda _: _ != '', map(lambda _: _.strip(), s.split(','))))
 
   @base.require_priv(builtin.PRIV_USER_PROFILE)
@@ -623,9 +622,9 @@ class ProblemSettingsHandler(base.Handler):
   @base.multi_post_argument
   @base.require_csrf_token
   @base.sanitize
-  async def post(self, *, pid: document.convert_doc_id, hidden: bool=False, show_case_detail: bool=False,
+  async def post(self, *, pid: document.convert_doc_id, hidden: bool = False, show_case_detail: bool = False,
                  category: str, tag: str, languages: list,
-                 difficulty_setting: int, difficulty_admin: str=''):
+                 difficulty_setting: int, difficulty_admin: str = ''):
     pdoc = await problem.get(self.domain_id, pid)
     if not self.own(pdoc, builtin.PERM_EDIT_PROBLEM_SELF):
       self.check_perm(builtin.PERM_EDIT_PROBLEM)
@@ -641,12 +640,12 @@ class ProblemSettingsHandler(base.Handler):
               or c in builtin.PROBLEM_SUB_CATEGORIES):
         raise error.ValidationError('category')
     if difficulty_setting not in problem.SETTING_DIFFICULTY_RANGE:
-        raise error.ValidationError('difficulty_setting')
+      raise error.ValidationError('difficulty_setting')
     if difficulty_admin:
-        try:
-          difficulty_admin = int(difficulty_admin)
-        except ValueError:
-          raise error.ValidationError('difficulty_admin')
+      try:
+        difficulty_admin = int(difficulty_admin)
+      except ValueError:
+        raise error.ValidationError('difficulty_admin')
     else:
       difficulty_admin = None
     await problem.edit(self.domain_id, pdoc['doc_id'], hidden=hidden, show_case_detail=show_case_detail,
@@ -706,9 +705,9 @@ class ProblemStatisticsHandler(base.Handler):
       self.check_perm(builtin.PERM_VIEW_PROBLEM_HIDDEN)
     udoc = await user.get_by_uid(pdoc['owner_uid'])
     path_components = self.build_path(
-        (self.translate('problem_main'), self.reverse_url('problem_main')),
-        (pdoc['title'], self.reverse_url('problem_detail', pid=pdoc['doc_id'])),
-        (self.translate('problem_statistics'), None))
+      (self.translate('problem_main'), self.reverse_url('problem_main')),
+      (pdoc['title'], self.reverse_url('problem_detail', pid=pdoc['doc_id'])),
+      (self.translate('problem_statistics'), None))
     self.render('problem_statistics.html', pdoc=pdoc, udoc=udoc,
                 page_title=pdoc['title'], path_components=path_components)
 

@@ -72,7 +72,7 @@ class ValidationError(ForbiddenError):
 class FileTooLongError(ValidationError):
   @property
   def message(self):
-    return 'The uploaded file is too long.'
+    return 'The uploaded file size {0} exceeds the maximum size {1}.'
 
 
 class FileTypeNotAllowedError(ValidationError):

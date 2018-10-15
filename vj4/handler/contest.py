@@ -436,8 +436,11 @@ class ContestDetailProblemSubmitHandler(ContestMixin, ContestPageCategoryMixin, 
   @base.require_perm(builtin.PERM_SUBMIT_PROBLEM)
   @base.limit_rate('add_record', 60, 100)
   @base.limit_rate_homework('add_record', 24)
+  @base.limit_file_size('code', 2)
   async def post(self, *, ctype: str, tid: objectid.ObjectId, pid: document.convert_doc_id,
                  lang: str, code: objectid.ObjectId):
+    # TODO(tc-imba) add the file size limit as a setting
+
     doc_type = constant.contest.CTYPE_TO_DOCTYPE[ctype]
     # TODO(iceboy): rate limit base on ip.
     tdoc, pdoc = await asyncio.gather(contest.get(self.domain_id, doc_type, tid),

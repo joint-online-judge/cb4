@@ -531,6 +531,22 @@ def limit_rate_homework(op, period_hours, max_operations_default=1000):
   return decorate
 
 
+def limit_file_size(file, max_file_size_mb):
+  def decorate(coro):
+    @functools.wraps(coro)
+    async def wrapped(self, **kwargs):
+      file_info = await fs.get(kwargs[file])
+      max_file_size = max_file_size_mb << 20
+      if file_info.length > max_file_size:
+        await fs.unlink(kwargs[file])
+        raise error.FileTooLongError(file_info.length, max_file_size)
+      return await coro(self, **kwargs)
+
+    return wrapped
+
+  return decorate
+
+
 def sanitize(func):
   @functools.wraps(func)
   def wrapped(self, **kwargs):
