@@ -55,7 +55,7 @@ async def add(domain_id: str, pid: document.convert_doc_id, type: int, uid: int,
 async def system_test(rdoc, judge_category):
   coll = db.coll('record')
   doc = {'hidden': rdoc['hidden'],
-         'show_detail': rdoc['show_detail'],
+         'show_detail': 'show_detail' in rdoc and rdoc['show_detail'] or False,
          'status': constant.record.STATUS_WAITING,
          'score': 0,
          'time_ms': 0,
