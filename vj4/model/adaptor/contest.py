@@ -2,6 +2,9 @@ import collections
 import datetime
 import functools
 import itertools
+from zipfile import ZipFile, ZipInfo, ZIP_DEFLATED
+from io import BytesIO
+import mimetypes
 
 from bson import objectid
 from pymongo import errors
@@ -9,12 +12,12 @@ from pymongo import errors
 from vj4 import constant
 from vj4 import error
 from vj4.model import document
+from vj4.model import fs
 from vj4.model import record
 from vj4.util import argmethod
 from vj4.util import misc
 from vj4.util import rank
 from vj4.util import validator
-
 
 journal_key_func = lambda j: j['rid']
 
@@ -225,7 +228,7 @@ def _assignment_scoreboard(is_export, _, tdoc, ranked_tsdocs, udict, pdict):
         row.append({'type': 'string', 'value': col_time_str})
       else:
         row.append({'type': 'record',
-                    'value':'{0} / {1}\n{2}'.format(col_score, col_original_score, col_time_str), 'raw': rdoc})
+                    'value': '{0} / {1}\n{2}'.format(col_score, col_original_score, col_time_str), 'raw': rdoc})
     rows.append(row)
   return rows
 
@@ -294,9 +297,9 @@ async def get(domain_id: str, doc_type: int, tid: objectid.ObjectId):
 
 async def edit(domain_id: str, doc_type: int, tid: objectid.ObjectId, **kwargs):
   if 'title' in kwargs:
-      validator.check_title(kwargs['title'])
+    validator.check_title(kwargs['title'])
   if 'content' in kwargs:
-      validator.check_content(kwargs['content'])
+    validator.check_content(kwargs['content'])
   if 'rule' in kwargs:
     if doc_type == document.TYPE_CONTEST:
       if kwargs['rule'] not in constant.contest.CONTEST_RULES:
@@ -326,7 +329,7 @@ def get_multi(domain_id: str, doc_type: int, fields=None, **kwargs):
                             doc_type=doc_type,
                             fields=fields,
                             **kwargs) \
-                 .sort([('doc_id', -1)])
+    .sort([('doc_id', -1)])
 
 
 @argmethod.wrap
@@ -373,8 +376,8 @@ async def get_and_list_status(domain_id: str, doc_type: int, tid: objectid.Objec
                                            doc_type=doc_type,
                                            doc_id=tdoc['doc_id'],
                                            fields=fields) \
-                         .sort(RULES[tdoc['rule']].status_sort) \
-                         .to_list()
+    .sort(RULES[tdoc['rule']].status_sort) \
+    .to_list()
   return tdoc, tsdocs
 
 
@@ -423,6 +426,26 @@ async def recalc_status(domain_id: str, doc_type: int, tid: objectid.ObjectId):
       stats = RULES[tdoc['rule']].stat_func(tdoc, journal)
       await document.rev_set_status(domain_id, doc_type, tid, tsdoc['uid'], tsdoc['rev'],
                                     return_doc=False, journal=journal, **stats)
+
+
+async def export_records(rdocs: list):
+  bytes = BytesIO()
+  zip_file = ZipFile(bytes, 'w', ZIP_DEFLATED, False)
+  for rdoc in rdocs:
+    grid_out = await fs.get(rdoc['code'])
+    content_type = grid_out.content_type or 'application/octet-stream'
+    ext = mimetypes.guess_extension(content_type)
+    if not ext:
+      ext = ''
+    filename = str(rdoc['uid']) + ext
+    zip_info = ZipInfo(filename)
+    zip_info.external_attr = 0o666 << 16
+    zip_info.compress_type = ZIP_DEFLATED
+    zip_file.writestr(zip_info, await grid_out.read())
+  zip_file.close()
+  bytes.seek(0)
+  data = bytes.read()
+  return data
 
 
 if __name__ == '__main__':

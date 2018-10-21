@@ -164,6 +164,28 @@ class ContestCommonOperationMixin(object):
     for pid in pids:
       await problem.set_hidden(self.domain_id, pid, True)
 
+  async def get_latest_records(self, doc_type, tid, break_func=None, skip_func=None):
+    tdoc, tsdocs = await contest.get_and_list_status(self.domain_id, doc_type, tid)
+    result = []
+
+    for tsdoc in tsdocs:
+      # continue if no record found
+      if not tsdoc.get('journal'):
+        continue
+
+      rids = list(map(lambda x: x['rid'], tsdoc['journal']))
+      rdocs = record.get_multi(get_hidden=True, _id={'$in': rids}).sort([('_id', -1)])
+
+      async for rdoc in rdocs:
+        if break_func and break_func(rdoc):
+          break
+        if skip_func and skip_func(rdoc):
+          continue
+        result.append(rdoc)
+        break
+
+    return result
+
 
 class ContestMixin(ContestStatusMixin, ContestVisibilityMixin, ContestCommonOperationMixin):
   pass
@@ -787,7 +809,7 @@ class ContestEditHandler(ContestMixin, ContestPageCategoryMixin, base.Handler):
 
 
 @app.route('/{ctype:contest|homework}/{tid}/system_test', 'contest_system_test')
-class ContestEditHandler(ContestMixin, ContestPageCategoryMixin, base.Handler):
+class ContestSystemTestHandler(ContestMixin, ContestPageCategoryMixin, base.Handler):
   @base.route_argument
   async def get(self, *, ctype: str, **kwargs):
     if ctype == 'homework':
@@ -832,7 +854,8 @@ class ContestEditHandler(ContestMixin, ContestPageCategoryMixin, base.Handler):
   @base.post_argument
   @base.require_csrf_token
   @base.sanitize
-  async def _post_homework(self, *, ctype: str, tid: objectid.ObjectId, judge_category: str, system_test_new: bool = False):
+  async def _post_homework(self, *, ctype: str, tid: objectid.ObjectId, judge_category: str,
+                           system_test_new: bool = False):
     tdoc = await contest.get(self.domain_id, document.TYPE_HOMEWORK, tid)
     if not self.own(tdoc, builtin.PERM_EDIT_HOMEWORK_SELF):
       self.check_perm(builtin.PERM_EDIT_HOMEWORK)
@@ -861,3 +884,32 @@ class ContestEditHandler(ContestMixin, ContestPageCategoryMixin, base.Handler):
         break
 
     self.json_or_redirect(self.reverse_url('contest_detail', ctype=ctype, tid=tid))
+
+
+@app.route('/{ctype:contest|homework}/{tid}/export', 'contest_export')
+class ContestExporttHandler(ContestMixin, base.Handler):
+  @base.route_argument
+  async def post(self, *, ctype: str, **kwargs):
+    if ctype == 'homework':
+      await self._post_homework()
+    elif ctype == 'contest':
+      raise error.InvalidArgumentError('ctype')
+      # await self._post_contest()
+    else:
+      raise error.InvalidArgumentError('ctype')
+
+  @base.require_priv(builtin.PRIV_USER_PROFILE)
+  @base.require_perm(builtin.PERM_EDIT_PROBLEM)
+  @base.route_argument
+  @base.post_argument
+  @base.require_csrf_token
+  @base.sanitize
+  async def _post_homework(self, *, ctype: str, tid: objectid.ObjectId):
+    tdoc = await contest.get(self.domain_id, document.TYPE_HOMEWORK, tid)
+    if not self.own(tdoc, builtin.PERM_EDIT_HOMEWORK_SELF):
+      self.check_perm(builtin.PERM_EDIT_HOMEWORK)
+    doc_type = constant.contest.CTYPE_TO_DOCTYPE[ctype]
+
+    rdocs = await self.get_latest_records(doc_type, tid)
+    data = await contest.export_records(rdocs)
+    await self.binary(data, file_name='{}_records.zip'.format(tid))

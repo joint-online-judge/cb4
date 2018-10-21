@@ -1,32 +1,43 @@
 {% extends "layout/basic.html" %}
 {% block content %}
-<div class="row">
-  <div class="medium-12 columns">
-    <div class="section">
-      <div class="section__header">
-        <h1 class="section__title">{{ _('System Test') }}</h1>
+  <div class="row">
+    <div class="medium-12 columns">
+      <div class="section">
+        <div class="section__header">
+          <h1 class="section__title">{{ _('System Test') }}</h1>
+        </div>
+        <div class="section__body">
+          <form method="post">
+            {{ form.form_text(columns=12, label='Judge Category', help_text='Splitted by \', \'. The default judge category is "pretest, sentence"', name='judge_category', value='pretest, sentence') }}
+            {{ form.form_checkbox(label='Only test records without these categories', name='system_test_new', value=True) }}
+            <div class="row">
+              <div class="columns">
+                <input type="hidden" name="csrf_token" value="{{ handler.csrf_token }}">
+                <button type="submit" class="rounded primary button">
+                  {{ _('Begin System Test') }}
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
       </div>
-      <div class="section__body">
-        <form method="post">
-          {{ form.form_text(columns=12, label='Judge Category', help_text='Splitted by \', \'. The default judge category is "pretest, sentence"', name='judge_category', value='pretest, sentence') }}
-          {{ form.form_checkbox(label='Only test records without these categories', name='system_test_new', value=True) }}
-          <div class="row"><div class="columns">
-            <input type="hidden" name="csrf_token" value="{{ handler.csrf_token }}">
-            <button type="submit" class="rounded primary button">
-              {{ _('Begin System Test') }}
-            </button>
-          </div></div>
-        </form>
-      </div>
-    </div>
-    <div class="section">
-      <div class="section__header">
-        <h1 class="section__title">{{ _('Export') }}</h1>
-      </div>
-      <div class="section__body">
-
+      <div class="section">
+        <div class="section__header">
+          <h1 class="section__title">{{ _('Export') }}</h1>
+        </div>
+        <div class="section__body">
+          <form method="post" action="export">
+            <div class="row">
+              <div class="columns">
+                <input type="hidden" name="csrf_token" value="{{ handler.csrf_token }}">
+                <button type="submit" class="rounded primary button">
+                  {{ _('Export') }}
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   </div>
-</div>
 {% endblock %}
