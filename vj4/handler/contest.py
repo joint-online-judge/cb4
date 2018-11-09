@@ -862,6 +862,7 @@ class ContestSystemTestHandler(ContestMixin, ContestPageCategoryMixin, base.Hand
     doc_type = constant.contest.CTYPE_TO_DOCTYPE[ctype]
     judge_category = self.split_tags(judge_category)
     tdoc, tsdocs = await contest.get_and_list_status(self.domain_id, doc_type, tid)
+    pid_num = len(tdoc['pids'])
 
     for tsdoc in tsdocs:
       # continue if no record found
@@ -872,16 +873,23 @@ class ContestSystemTestHandler(ContestMixin, ContestPageCategoryMixin, base.Hand
       rdocs = record.get_multi(get_hidden=True, _id={'$in': rids}).sort([('_id', -1)])
 
       # find the newest record to be system tested
+      pid_set = set()
       async for rdoc in rdocs:
+        if len(pid_set) >= pid_num:
+          # all tested
+          break
+        if rdoc['pid'] in pid_set:
+          continue
         if system_test_new and sorted(rdoc['judge_category']) == judge_category:
           # in system test new mode, records with same judge_category are skipped
-          break
+          pid_set.add(rdoc['pid'])
+          continue
         if len(rdoc['judge_category']) > 0:
           # records with judge_category are not origin records
           continue
         rid = await record.system_test(rdoc, judge_category)
         await contest.update_status(self.domain_id, rdoc['tid'], rdoc['uid'], rid, rdoc['pid'], False, 0)
-        break
+        pid_set.add(rdoc['pid'])
 
     self.json_or_redirect(self.reverse_url('contest_detail', ctype=ctype, tid=tid))
 
