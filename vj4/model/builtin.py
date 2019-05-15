@@ -334,7 +334,11 @@ LEVELS = collections.OrderedDict([(10, 1),
 # FOOTER_EXTRA_HTMLS = ['© 2005 - 2017 <a href="https://vijos.org/">Vijos.org</a>', version.get(),
 #                       '<a href="http://www.miitbeian.gov.cn/" target="_blank" rel="nofollow">' +
 #                       '沪ICP备14040537号</a>']
-FOOTER_EXTRA_HTMLS = ['© 2018 <a href="https://github.com/umji-autograder/cb4">Joint Online Judge</a>', version.get()]
+FOOTER_EXTRA_HTMLS = [
+    '© 2018 - 2019 <a href="https://github.com/umji-autograder/cb4">Joint Online Judge</a>',
+    version.get(),
+    '<a href="https://net.sjtu.edu.cn/" target="_blank" rel="nofollow">沪交ICP备20190085号</a>',
+]
 
 PROBLEM_CATEGORIES = collections.OrderedDict([
     ('动态规划', [
