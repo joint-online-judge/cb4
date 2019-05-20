@@ -203,8 +203,7 @@ class UserLoginHandler(base.Handler, UserSettingsMixin):
                                            loginat=datetime.datetime.utcnow(),
                                            loginip=self.remote_ip),
                            self.update_session(new_saved=True, uid=udoc['_id']))
-      self.json_or_redirect(self.referer_or_main)
-      # self.redirect(self.reverse_url('domain_main'))
+      self.redirect(self.reverse_url('domain_main'))
     else:
       self.redirect(oauth.get_authorize_url(redirect_url))
       # self.render('user_login.html')
