@@ -176,6 +176,12 @@ def _acm_scoreboard(is_export, _, tdoc, ranked_tsdocs, udict, pdict):
 
 
 def _assignment_scoreboard(is_export, _, tdoc, ranked_tsdocs, udict, pdict):
+  ranked_tsdocs = list(ranked_tsdocs)
+  for i, tsdoc in ranked_tsdocs:
+    print(tsdoc)
+    
+
+
   columns = []
   columns.append({'type': 'rank', 'value': _('Rank')})
   columns.append({'type': 'user', 'value': _('User')})
@@ -372,12 +378,18 @@ async def get_dict_status(domain_id, uid, tids, *, fields=None):
 async def get_and_list_status(domain_id: str, doc_type: int, tid: objectid.ObjectId, fields=None):
   # TODO(iceboy): projection, pagination.
   tdoc = await get(domain_id, doc_type, tid)
-  tsdocs = await document.get_multi_status(domain_id=domain_id,
-                                           doc_type=doc_type,
-                                           doc_id=tdoc['doc_id'],
-                                           fields=fields) \
-    .sort(RULES[tdoc['rule']].status_sort) \
-    .to_list()
+  tsdocs = await document.aggregate_contest_detail(domain_id=domain_id,
+                                                   doc_type=doc_type,
+                                                   doc_id=tdoc['doc_id'],
+                                                   sort=RULES[tdoc['rule']].status_sort)
+  # print(tsdocs)
+  # tsdocs = await document.get_multi_status(domain_id=domain_id,
+  #                                          doc_type=doc_type,
+  #                                          doc_id=tdoc['doc_id'],
+  #                                          fields=fields) \
+  #   .sort(RULES[tdoc['rule']].status_sort) \
+  #   .to_list()
+  # print(tsdocs)
   return tdoc, tsdocs
 
 

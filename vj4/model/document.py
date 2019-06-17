@@ -235,6 +235,42 @@ def get_multi_status(*, fields=None, **kwargs):
   return coll.find(kwargs, projection=fields)
 
 
+async def aggregate_contest_detail(*, sort: list = None, **kwargs):
+  pipeline = [{
+    '$match': kwargs
+  }, {
+    '$unwind': '$detail'
+  }, {
+    '$lookup': {
+      'from': 'record',
+      'let': {'detail_left': '$detail.rid'},
+      # 'localField': 'detail.rid',
+      # 'foreignField': '_id',
+      'as': 'detail.rdoc',
+      'pipeline': [{
+        '$match': {'$expr': {'$eq': ['$$detail_left', '$_id']}}
+      }, {
+        '$project': {'cases.score': 1}
+      }]
+    }
+  }, {
+    '$group': {
+      '_id': '$_id',
+      'temp': {'$first': '$$ROOT'},
+      'detail': {'$push': '$detail'}
+    }
+  }, {
+    '$addFields': {'temp.detail': '$detail'}
+  }, {
+    '$replaceRoot': {'newRoot': '$temp'}
+  }, {
+    '$sort': dict(sort or [])
+  }]
+  adocs = []
+  async for adoc in await db.coll('document.status').aggregate(pipeline):
+    adocs.append(adoc)
+  return adocs
+
 async def set_status(domain_id, doc_type, doc_id, uid, **kwargs):
   coll = db.coll('document.status')
   doc = await coll.find_one_and_update(filter={'domain_id': domain_id,
