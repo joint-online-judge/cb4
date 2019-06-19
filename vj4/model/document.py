@@ -254,6 +254,8 @@ async def aggregate_contest_detail(*, sort: list = None, **kwargs):
       }]
     }
   }, {
+    '$unwind': '$detail.rdoc'
+  }, {
     '$group': {
       '_id': '$_id',
       'temp': {'$first': '$$ROOT'},

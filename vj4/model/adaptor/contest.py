@@ -177,10 +177,15 @@ def _acm_scoreboard(is_export, _, tdoc, ranked_tsdocs, udict, pdict):
 
 def _assignment_scoreboard(is_export, _, tdoc, ranked_tsdocs, udict, pdict):
   ranked_tsdocs = list(ranked_tsdocs)
-  for i, tsdoc in ranked_tsdocs:
-    print(tsdoc)
-    
-
+  casenumdict = {}
+  for rank, tsdoc in ranked_tsdocs:
+    if 'detail' in tsdoc:
+      for detail in tsdoc['detail']:
+        casenum = len(detail['rdoc']['cases'])
+        if detail['pid'] not in casenumdict:
+          casenumdict[detail['pid']] = casenum
+        else:
+          casenumdict[detail['pid']] += casenum
 
   columns = []
   columns.append({'type': 'rank', 'value': _('Rank')})
@@ -201,6 +206,10 @@ def _assignment_scoreboard(is_export, _, tdoc, ranked_tsdocs, udict, pdict):
                       'value': '#{0} {1}'.format(index + 1, _('Time (Seconds)'))})
       columns.append({'type': 'problem_time_str',
                       'value': '#{0} {1}'.format(index + 1, _('Time'))})
+      if pid in casenumdict:
+        for case in range(casenumdict[pid]):
+          columns.append({'type': 'problem_case_detail',
+                          'value': '#{0} {1} {2}'.format(index + 1, _('Case'), case + 1)})
     else:
       columns.append({'type': 'problem_detail',
                       'value': '#{0}'.format(index + 1), 'raw': pdict[pid]})
@@ -222,7 +231,8 @@ def _assignment_scoreboard(is_export, _, tdoc, ranked_tsdocs, udict, pdict):
       row.append({'type': 'string', 'value': tsdoc.get('time', 0.0)})
     row.append({'type': 'string', 'value': misc.format_seconds(tsdoc.get('time', 0))})
     for pid in tdoc['pids']:
-      rdoc = tsddict.get(pid, {}).get('rid', None)
+      rid = tsddict.get(pid, {}).get('rid', None)
+      rdoc = tsddict.get(pid, {}).get('rdoc', None)
       col_score = tsddict.get(pid, {}).get('penalty_score', '-')
       col_original_score = tsddict.get(pid, {}).get('score', '-')
       col_time = tsddict.get(pid, {}).get('time', '-')
@@ -232,9 +242,16 @@ def _assignment_scoreboard(is_export, _, tdoc, ranked_tsdocs, udict, pdict):
         row.append({'type': 'string', 'value': col_original_score})
         row.append({'type': 'string', 'value': col_time})
         row.append({'type': 'string', 'value': col_time_str})
+        if pid in casenumdict and rdoc:
+          casenum = len(rdoc['cases'])
+          for case in range(casenumdict[pid]):
+            if case < casenum:
+              row.append({'type': 'string', 'value': rdoc['cases'][case].get('score', 0)})
+            else:
+              row.append({'type': 'string', 'value': 0})
       else:
         row.append({'type': 'record',
-                    'value': '{0} / {1}\n{2}'.format(col_score, col_original_score, col_time_str), 'raw': rdoc})
+                    'value': '{0} / {1}\n{2}'.format(col_score, col_original_score, col_time_str), 'raw': rid})
     rows.append(row)
   return rows
 
