@@ -133,7 +133,7 @@ class ContestVisibilityMixin(object):
 
 class ContestCommonOperationMixin(object):
   async def get_scoreboard(self, doc_type: int, tid: objectid.ObjectId, is_export: bool = False):
-    tdoc, tsdocs = await contest.get_and_list_status(self.domain_id, doc_type, tid)
+    tdoc, tsdocs = await contest.get_and_list_status(self.domain_id, doc_type, tid, is_export=is_export)
     if not self.can_show_scoreboard(tdoc):
       if doc_type == document.TYPE_CONTEST:
         raise error.ContestScoreboardHiddenError(self.domain_id, tid)

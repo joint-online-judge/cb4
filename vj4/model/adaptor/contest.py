@@ -178,14 +178,16 @@ def _acm_scoreboard(is_export, _, tdoc, ranked_tsdocs, udict, pdict):
 def _assignment_scoreboard(is_export, _, tdoc, ranked_tsdocs, udict, pdict):
   ranked_tsdocs = list(ranked_tsdocs)
   casenumdict = {}
-  for rank, tsdoc in ranked_tsdocs:
-    if 'detail' in tsdoc:
-      for detail in tsdoc['detail']:
-        casenum = len(detail['rdoc']['cases'])
-        if detail['pid'] not in casenumdict:
-          casenumdict[detail['pid']] = casenum
-        else:
-          casenumdict[detail['pid']] += casenum
+  if is_export:
+    for rank, tsdoc in ranked_tsdocs:
+      if 'detail' in tsdoc:
+        for detail in tsdoc['detail']:
+          if 'rdoc' in detail:
+            casenum = len(detail['rdoc']['cases'])
+            if detail['pid'] not in casenumdict:
+              casenumdict[detail['pid']] = casenum
+            else:
+              casenumdict[detail['pid']] = max(casenumdict[detail['pid']], casenum)
 
   columns = []
   columns.append({'type': 'rank', 'value': _('Rank')})
@@ -392,20 +394,23 @@ async def get_dict_status(domain_id, uid, tids, *, fields=None):
 
 
 @argmethod.wrap
-async def get_and_list_status(domain_id: str, doc_type: int, tid: objectid.ObjectId, fields=None):
+async def get_and_list_status(domain_id: str, doc_type: int, tid: objectid.ObjectId,
+                              fields=None, is_export: bool = False):
   # TODO(iceboy): projection, pagination.
   tdoc = await get(domain_id, doc_type, tid)
-  tsdocs = await document.aggregate_contest_detail(domain_id=domain_id,
-                                                   doc_type=doc_type,
-                                                   doc_id=tdoc['doc_id'],
-                                                   sort=RULES[tdoc['rule']].status_sort)
+  if is_export:
+    tsdocs = await document.aggregate_contest_detail(domain_id=domain_id,
+                                                     doc_type=doc_type,
+                                                     doc_id=tdoc['doc_id'],
+                                                     sort=RULES[tdoc['rule']].status_sort)
   # print(tsdocs)
-  # tsdocs = await document.get_multi_status(domain_id=domain_id,
-  #                                          doc_type=doc_type,
-  #                                          doc_id=tdoc['doc_id'],
-  #                                          fields=fields) \
-  #   .sort(RULES[tdoc['rule']].status_sort) \
-  #   .to_list()
+  else:
+    tsdocs = await document.get_multi_status(domain_id=domain_id,
+                                             doc_type=doc_type,
+                                             doc_id=tdoc['doc_id'],
+                                             fields=fields) \
+      .sort(RULES[tdoc['rule']].status_sort) \
+      .to_list()
   # print(tsdocs)
   return tdoc, tsdocs
 
