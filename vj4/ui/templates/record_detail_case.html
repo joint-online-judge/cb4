@@ -8,26 +8,27 @@
 </script>#}
   <div class="row">
     <div class="medium-12 columns">
-      <div class="section visible" id="status">
+      <div class="section visible" id="notes">
         <div class="section__header">
           <h1 class="section__title">
             Notes
           </h1>
         </div>
         <div class="section__body typo">
-          This function is in alpha test. Please help improve it in the issues
+          This function is in beta test. Please help improve it in the issues
           <a href="https://github.com/joint-online-judge/cb4/issues/22" target="_blank">here</a>.
         </div>
       </div>
     </div>
     <div class="medium-12 columns">
-      <div class="section visible" id="status">
+      <div class="section visible" id="stderr">
         <div class="section__header">
           <h1 class="section__title">
             <span
                 class="icon record-status--icon {{ vj4.constant.record.STATUS_CODES[vj4.constant.record.STATUS_JUDGING] }}"></span>
             <span
                 class="record-status--text {{ vj4.constant.record.STATUS_CODES[vj4.constant.record.STATUS_JUDGING] }}">Stderr</span>
+            <a class="tool-button" href="{{ reverse_url('wiki_help') }}#stderr"><span class="icon icon-help"></span></a>
           </h1>
         </div>
         <div class="section__body">
@@ -35,8 +36,37 @@
         </div>
       </div>
     </div>
+    {% if rcdoc['stdout'] == rcdoc['answer'] and rcdoc['status'] != vj4.constant.record.STATUS_ACCEPTED %}
+      <div class="medium-12 columns">
+        <div class="section visible" id="hints">
+          <div class="section__header">
+            <h1 class="section__title">
+              Hints
+            </h1>
+          </div>
+          <div class="section__body typo">
+            <p>Your answer is identical to the JOJ answer in the first several lines.</p>
+            {% if rcdoc['status'] == vj4.constant.record.STATUS_WRONG_ANSWER %}
+              <p>However, you still get <span
+                  class="record-status--text {{ vj4.constant.record.STATUS_CODES[rcdoc['status']] }}">
+                {{ vj4.constant.record.STATUS_TEXTS[rcdoc['status']] }}</span>
+                because the complete output may be longer and there might be errors in the future lines.</p>
+            {% else %}
+              <p>However, the problem is
+                <span class="record-status--text {{ vj4.constant.record.STATUS_CODES[rcdoc['status']] }}">
+                {{ vj4.constant.record.STATUS_TEXTS[rcdoc['status']] }}</span>.
+                {% if rcdoc['execute_status'] != 0 %}
+                  And the exit code of your program is {{ rcdoc['execute_status'] }}, which should be 0.
+                {% endif %}
+              </p>
+            {% endif %}
+            <p>Please double check your code to solve this problem and try again.</p>
+          </div>
+        </div>
+      </div>
+    {% endif %}
     <div class="medium-6 columns">
-      <div class="section visible" id="status">
+      <div class="section visible" id="stdout">
         <div class="section__header">
           <h1 class="section__title">
             <span class="icon record-status--icon {{ vj4.constant.record.STATUS_CODES[rcdoc['status']] }}"></span>
@@ -49,7 +79,7 @@
       </div>
     </div>
     <div class="medium-6 columns">
-      <div class="section visible" id="status">
+      <div class="section visible" id="answer">
         <div class="section__header">
           <h1 class="section__title">
             <span
