@@ -16,21 +16,29 @@ RUN apt-get update && \
 ENV NVM_DIR="$HOME/.nvm"
 RUN \. "$NVM_DIR/nvm.sh" && nvm install 9
 
+# Enable IP Geo-Location
+RUN curl "http://geolite.maxmind.com/download/geoip/database/GeoLite2-City.mmdb.gz" | gunzip -c > GeoLite2-City.mmdb
+
+# Copy the cb4 dependencies
+COPY ./package.json ./requirements.txt /srv/cb4/
+WORKDIR /srv/cb4
+
+# Install python and node dependencies
+RUN \. "$NVM_DIR/nvm.sh" && nvm use 9 && \
+    npm install --registry=https://registry.npm.taobao.org
+RUN pip3 install -r ./requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple/
+
+# Build node modules
+COPY ./vj4/ui /srv/cb4/vj4/ui
+RUN npm run build
+
 # Copy the cb4 files
 COPY ./scripts /srv/cb4/scripts
 COPY ./vj4 /srv/cb4/vj4
 COPY ./.git /srv/cb4/.git
-COPY ./package.json ./requirements.txt /srv/cb4/
 COPY ./pm /usr/local/bin/
-WORKDIR /srv/cb4
 
-# Install python dependencies and build node modules
-RUN \. "$NVM_DIR/nvm.sh" && nvm use 9 && \
-    npm install --registry=https://registry.npm.taobao.org && npm run build
-RUN pip3 install -r ./requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple/
-
-# Enable IP Geo-Location
-RUN curl "http://geolite.maxmind.com/download/geoip/database/GeoLite2-City.mmdb.gz" | gunzip -c > GeoLite2-City.mmdb
+# Start the server
 
 ENV HOST="localhost" \
     PORT=34765 \
