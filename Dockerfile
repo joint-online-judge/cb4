@@ -30,7 +30,7 @@ RUN pip3 install -r ./requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simp
 
 # Build node modules
 COPY ./vj4/ui /srv/cb4/vj4/ui
-RUN npm run build
+RUN \. "$NVM_DIR/nvm.sh" && nvm use 9 && npm run build
 
 # Copy the cb4 files
 COPY ./scripts /srv/cb4/scripts
