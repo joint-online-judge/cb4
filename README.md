@@ -69,6 +69,10 @@ and the service will be started on port `34765` after a while.
 * [Node.js 6.0+](https://nodejs.org/en/download/package-manager/)
 * [RabbitMQ](http://www.rabbitmq.com/)
 
+```bash
+apt install python3-dev mongodb-server rabbitmq-server nodejs
+```
+
 ## Install requirements
 
 In the root of the repository, where `requirements.txt` and `package.json` locates:
