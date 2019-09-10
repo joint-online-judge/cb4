@@ -28,8 +28,12 @@ class DomainMainHandler(training_handler.TrainingStatusMixin, base.Handler):
 
   async def prepare_domain(self):
     dudict = await domain.get_dict_user_by_domain_id(self.user['_id'])
-    dids = list(dudict.keys())
-    dodocs = await domain.get_multi(_id={'$in': dids}).to_list()
+    if self.has_priv(builtin.PRIV_VIEW_ALL_DOMAIN):
+      # show all domains for superuser
+      dodocs = await domain.get_multi().to_list()
+    else:
+      dids = list(dudict.keys())
+      dodocs = await domain.get_multi(_id={'$in': dids}).to_list()
     #dodocs = await domain.get_multi().to_list()
     can_manage = {}
     for dodoc in builtin.DOMAINS + dodocs:
