@@ -397,3 +397,8 @@ class DatabaseVersionMismatchError(Error):
   @property
   def message(self):
     return 'Database version mismatch, got {0}, expect {1}. You need to invoke database upgrades.'
+
+class LanguageNotSupportedError(Error):
+  @property
+  def message(self):
+    return 'Language {0} not supported.'

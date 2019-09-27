@@ -38,6 +38,23 @@
           </form>
         </div>
       </div>
+      <div class="section">
+        <div class="section__header">
+          <h1 class="section__title">{{ _('Moss') }}</h1>
+        </div>
+        <div class="section__body">
+          <form method="post" action="moss">
+            <div class="row">
+              <div class="columns">
+                <input type="hidden" name="csrf_token" value="{{ handler.csrf_token }}">
+                <button type="submit" class="rounded primary button">
+                  {{ _('Moss') }}
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   </div>
 {% endblock %}

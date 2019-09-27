@@ -13,3 +13,4 @@ GitPython
 PyYAML
 git+https://github.com/iceb0y/aiomongo
 oauthlib
+mosspy

@@ -69,3 +69,30 @@ export const LANG_CODEMIRROR_MODES = {
   rb: 'text/x-ruby',
 };
 attachObjectMeta(LANG_CODEMIRROR_MODES, 'exportToPython', false);
+
+export const LANG_MOSS = {
+  c: 'c',
+  cc: 'cc',
+  java: 'java',
+  ml: 'ml',
+  pascal: 'pascal',
+  ada: 'ada',
+  lisp: 'lisp',
+  scheme: 'scheme',
+  haskell: 'haskell',
+  fortran: 'fortran',
+  ascii: 'ascii',
+  vhdl: 'vhdl',
+  perl: 'perl',
+  matlab: 'matlab',
+  python: 'python',
+  mips: 'mips',
+  prolog: 'prolog',
+  spice: 'spice',
+  vb: 'vb',
+  csharp: 'csharp',
+  modula2: 'modula2',
+  a8086: 'a8086',
+  javascript: 'javascript',
+  plsql: 'plsql',
+};
