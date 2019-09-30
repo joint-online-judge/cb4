@@ -1,3 +1,4 @@
+from bson import objectid
 from os import path, mkdir
 from shutil import rmtree
 from tempfile import mkdtemp
@@ -10,13 +11,18 @@ from vj4 import constant
 from vj4 import db
 from vj4 import error
 from vj4.model import fs
+from vj4.util import options
 
 
 # @TODO(tc-imba) the extraction is not safe now.
 
 def extract_text_file(file_obj, dest_dir, lang):
-  # @TODO add extension
-  with open(path.join(dest_dir, 'main' + '.cpp'), mode='wb') as file:
+  wildcards = constant.language.LANG_MOSS_WILDCARDS.get(lang, [])
+  if wildcards:
+    name = wildcards[0].replace('*', 'main')
+  else:
+    name = 'main.txt'
+  with open(path.join(dest_dir, name), mode='wb') as file:
     file.write(file_obj.read())
 
 
@@ -43,22 +49,40 @@ EXTRACT_OPEN_FUNC = {
 }
 
 
-async def moss_test(rdocs: list, language: str):
+async def moss_test(rdocs: list, language: str, ignore_limit: int = 10, wildcards: list = None):
   # check the language is supported by moss
   if language not in constant.language.LANG_MOSS:
     raise error.LanguageNotSupportedError(language)
   
+  ignore_limit = int(ignore_limit)
+  if ignore_limit < 2:
+    raise error.InvalidArgumentError('ignore_limit')
+  
+  if wildcards is None or len(wildcards) == 0:
+    wildcards = constant.language.LANG_MOSS_WILDCARDS.get(language, [])
+  
   moss_dir = mkdtemp(prefix='cb4.moss.')
   try:
+    moss = Moss(options.moss_user_id, language)
+    moss.setDirectoryMode(1)
+    moss.setIgnoreLimit(ignore_limit)
+    
     for rdoc in rdocs:
-      grid_out = await fs.get(rdoc['code'])
-      file_obj = BytesIO(await grid_out.read())
-      dest_dir = path.join(moss_dir, str(rdoc['uid']))
-      mkdir(dest_dir)
       if rdoc['code_type'] in EXTRACT_OPEN_FUNC:
-        EXTRACT_OPEN_FUNC[rdoc['code_type']](file_obj, dest_dir, language)
-      
-  finally:
-    print(moss_dir)
-    rmtree(moss_dir, ignore_errors=True)
+        try:
+          grid_out = await fs.get(rdoc['code'])
+          file_obj = BytesIO(await grid_out.read())
+          dest_dir = path.join(moss_dir, str(rdoc['uid']))
+          mkdir(dest_dir)
+          EXTRACT_OPEN_FUNC[rdoc['code_type']](file_obj, dest_dir, language)
+          for wildcard in wildcards:
+            moss.addFilesByWildcard(path.join(dest_dir, wildcard))
+        except Exception as e:
+          print(e)
+    
+    url = moss.send()
+    return url
   
+  finally:
+    # print(moss_dir)
+    rmtree(moss_dir, ignore_errors=True)

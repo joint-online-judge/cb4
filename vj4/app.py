@@ -39,6 +39,9 @@ options.define('oauth', default='', help='OAuth login type')
 options.define('oauth_client_id', default='', help='OAuth client id')
 options.define('oauth_client_secret', default='', help='OAuth client secret')
 
+# moss user id
+options.define('moss_user_id', default=987654321, help='Stanford Moss User ID')
+
 _logger = logging.getLogger(__name__)
 
 

@@ -5,6 +5,7 @@ import collections
 import datetime
 import functools
 import io
+import logging
 import pytz
 import yaml
 import zipfile
@@ -25,6 +26,8 @@ from vj4.model.adaptor import problem
 from vj4.handler import base
 from vj4.util import pagination
 from vj4.util.misc import filter_language, filter_content_type
+
+_logger = logging.getLogger(__name__)
 
 
 def _parse_pids(pids_str):
@@ -931,6 +934,10 @@ class ContestExporttHandler(ContestMixin, base.Handler):
 
 @app.route('/{ctype:contest|homework}/{tid}/moss', 'contest_moss')
 class ContestMosstHandler(ContestMixin, base.Handler):
+  def split_tags(self, s):
+    s = s.replace('，', ',')  # Chinese ', '
+    return list(filter(lambda _: _ != '', map(lambda _: _.strip(), s.split(','))))
+  
   @base.route_argument
   async def post(self, *, ctype: str, **kwargs):
     if ctype == 'homework':
@@ -947,12 +954,19 @@ class ContestMosstHandler(ContestMixin, base.Handler):
   @base.post_argument
   @base.require_csrf_token
   @base.sanitize
-  async def _post_homework(self, *, ctype: str, tid: objectid.ObjectId):
+  async def _post_homework(self, *, ctype: str, tid: objectid.ObjectId, language: str, wildcards: str,
+                           ignore_limit: int = 10):
     tdoc = await contest.get(self.domain_id, document.TYPE_HOMEWORK, tid)
     if not self.own(tdoc, builtin.PERM_EDIT_HOMEWORK_SELF):
       self.check_perm(builtin.PERM_EDIT_HOMEWORK)
     doc_type = constant.contest.CTYPE_TO_DOCTYPE[ctype]
     
     rdocs = await self.get_latest_records(doc_type, tid)
-    data = await moss.moss_test(rdocs, language='cc')
+    wildcards = self.split_tags(wildcards)
+
+    _logger.info('Submit Moss for %s', tid)
+    moss_url = await moss.moss_test(rdocs, language=language, wildcards=wildcards)
+    if moss_url:
+      await contest.update_moss_result(self.domain_id, document.TYPE_HOMEWORK, tid, moss_url=moss_url)
+    
     self.json_or_redirect(self.reverse_url('contest_system_test', ctype=ctype, tid=tid))

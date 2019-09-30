@@ -348,6 +348,10 @@ async def edit(domain_id: str, doc_type: int, tid: objectid.ObjectId, **kwargs):
     return await document.set(domain_id, doc_type, tid, **kwargs)
 
 
+async def update_moss_result(domain_id: str, doc_type: int, tid: objectid.ObjectId, moss_url: str):
+    return await document.set(domain_id, doc_type, tid, moss_url=moss_url)
+
+
 def get_multi(domain_id: str, doc_type: int, fields=None, **kwargs):
     # TODO(twd2): projection.
     return document.get_multi(domain_id=domain_id,
