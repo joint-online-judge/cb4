@@ -38,33 +38,35 @@
           </form>
         </div>
       </div>
-      <div class="section">
-        <div class="section__header">
-          <h1 class="section__title">{{ _('Moss') }}</h1>
-        </div>
-        {% if 'moss_url' in tdoc %}
-          <div class="section__body typo">
-            Last result: <a target="_blank" href="{{ tdoc['moss_url'] }}">{{ tdoc['moss_url'] }}</a>
+      {% if moss_user_id != 987654321 %}
+        <div class="section">
+          <div class="section__header">
+            <h1 class="section__title">{{ _('Moss') }}</h1>
           </div>
-        {% endif %}
-        <div class="section__body">
-          <form method="post" action="moss">
-            <div class="row">
-              {{ form.form_select2(columns=3, label='Code language', name='language', options=vj4.constant.language.LANG_MOSS.items(), row=false) }}
-              {{ form.form_text(columns=6, label='Filter Wildcards', help_text='Splitted by \', \'. Use default settings of the selected language if empty.', name='wildcards', value='', row=false) }}
-              {{ form.form_text(columns=3, label='Ignore Threshold', help_text='Ignore if a range of code appears in a number of submissions. Minimum is 2. Default is 10.', name='ignore_limit', value=10, row=false) }}
+          {% if 'moss_url' in tdoc %}
+            <div class="section__body typo">
+              Last result: <a target="_blank" href="{{ tdoc['moss_url'] }}">{{ tdoc['moss_url'] }}</a>
             </div>
-            <div class="row">
-              <div class="columns">
-                <input type="hidden" name="csrf_token" value="{{ handler.csrf_token }}">
-                <button type="submit" class="rounded primary button">
-                  {{ _('Moss') }}
-                </button>
+          {% endif %}
+          <div class="section__body">
+            <form method="post" action="moss">
+              <div class="row">
+                {{ form.form_select2(columns=3, label='Code language', name='language', options=vj4.constant.language.LANG_MOSS.items(), row=false) }}
+                {{ form.form_text(columns=6, label='Filter Wildcards', help_text='Splitted by \', \'. Use default settings of the selected language if empty.', name='wildcards', value='', row=false) }}
+                {{ form.form_text(columns=3, label='Ignore Threshold', help_text='Ignore if a range of code appears in a number of submissions. Minimum is 2. Default is 10.', name='ignore_limit', value=10, row=false) }}
               </div>
-            </div>
-          </form>
+              <div class="row">
+                <div class="columns">
+                  <input type="hidden" name="csrf_token" value="{{ handler.csrf_token }}">
+                  <button type="submit" class="rounded primary button">
+                    {{ _('Moss') }}
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
         </div>
-      </div>
+      {% endif %}
     </div>
   </div>
 {% endblock %}

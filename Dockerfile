@@ -49,7 +49,8 @@ ENV HOST="localhost" \
     DB_HOST="localhost" \
     DB_NAME="cb4-production" \
     MQ_HOST="localhost" \
-    MQ_VHOST="/"
+    MQ_VHOST="/" \
+    MOSS_USER_ID=987654321
 
 EXPOSE $PORT
 
@@ -62,4 +63,5 @@ CMD python3 -m vj4.server \
     --db-host=$DB_HOST \
     --db-name=$DB_NAME \
     --mq-host=$MQ_HOST \
-    --mq_vhost=$MQ_VHOST
+    --mq_vhost=$MQ_VHOST \
+    --moss-user-id=$MOSS_USER_ID
