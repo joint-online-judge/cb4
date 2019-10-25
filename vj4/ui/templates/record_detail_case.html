@@ -36,7 +36,7 @@
         </div>
       </div>
     </div>
-    {% if rcdoc['stdout'] == rcdoc['answer'] and rcdoc['status'] != vj4.constant.record.STATUS_ACCEPTED %}
+    {% if rcdoc['status'] != vj4.constant.record.STATUS_ACCEPTED %}
       <div class="medium-12 columns">
         <div class="section visible" id="hints">
           <div class="section__header">
@@ -45,14 +45,14 @@
             </h1>
           </div>
           <div class="section__body typo">
-            <p>Your answer is identical to the JOJ answer in the first several lines.</p>
+            <p>Your answer may be identical to the JOJ answer in the first several lines.</p>
             {% if rcdoc['status'] == vj4.constant.record.STATUS_WRONG_ANSWER %}
-              <p>However, you still get <span
+              <p>However, you will still get <span
                   class="record-status--text {{ vj4.constant.record.STATUS_CODES[rcdoc['status']] }}">
                 {{ vj4.constant.record.STATUS_TEXTS[rcdoc['status']] }}</span>
                 because the complete output may be longer and there might be errors in the future lines.</p>
             {% else %}
-              <p>However, the problem is
+              <p>However, the main problem you meet now is
                 <span class="record-status--text {{ vj4.constant.record.STATUS_CODES[rcdoc['status']] }}">
                 {{ vj4.constant.record.STATUS_TEXTS[rcdoc['status']] }}</span>.
                 {% if rcdoc['execute_status'] != 0 %}
