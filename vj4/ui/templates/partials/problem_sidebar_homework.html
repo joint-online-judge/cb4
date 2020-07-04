@@ -37,6 +37,9 @@
       <li class="menu__item"><a class="menu__link{% if page_name == 'problem_settings' %} active{% endif %}" href="{{ reverse_url('problem_settings', pid=pdoc['doc_id']) }}">
         <span class="icon icon-wrench"></span> {{ _('Settings') }}
       </a></li>
+      <li class="menu__item"><a class="menu__link" href="{{ reverse_url('record_main') + "?pid=" + pdoc['doc_id'].__str__() }}">
+        <span class="icon icon-schedule"></span> {{ _('Records') }}
+      </a></li>
     {% endif %}
     </ol>
     {% endif %}
