@@ -100,7 +100,7 @@ export default function (env = {}) {
     },
     resolve: {
       modules: [
-        root('node_modules'),
+        'node_modules',
       ],
       alias: {
         vj: root('vj4/ui'),

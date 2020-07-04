@@ -475,7 +475,7 @@ async def export_records(rdocs: list):
         ext = mimetypes.guess_extension(content_type)
         if not ext:
             ext = ''
-        filename = str(rdoc['uid']) + ext
+        filename = str(rdoc['pid']) + '/' + str(rdoc['uid']) + ext
         zip_info = ZipInfo(filename)
         zip_info.external_attr = 0o666 << 16
         zip_info.compress_type = ZIP_DEFLATED

@@ -82,6 +82,7 @@ module.exports = {
     "react/jsx-filename-extension": "off",
     "react/no-string-refs": "off",
     "react/require-default-props": "off",
-    "jsx-a11y/no-static-element-interactions": "off"
+    "jsx-a11y/no-static-element-interactions": "off",
+    "linebreak-style": "off",
   }
 };
