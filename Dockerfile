@@ -17,7 +17,8 @@ ENV NVM_DIR="$HOME/.nvm"
 RUN \. "$NVM_DIR/nvm.sh" && nvm install 9
 
 # Enable IP Geo-Location
-RUN curl "http://geolite.maxmind.com/download/geoip/database/GeoLite2-City.mmdb.gz" | gunzip -c > GeoLite2-City.mmdb
+#RUN curl "http://geolite.maxmind.com/download/geoip/database/GeoLite2-City.mmdb.gz" | gunzip -c > GeoLite2-City.mmdb
+RUN curl "https://raw.githubusercontent.com/wp-statistics/GeoLite2-City/master/GeoLite2-City.mmdb.gz" | gunzip -c > GeoLite2-City.mmdb
 
 # Copy the cb4 dependencies
 COPY ./package.json ./requirements.txt /srv/cb4/
