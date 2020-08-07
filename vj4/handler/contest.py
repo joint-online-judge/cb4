@@ -852,7 +852,7 @@ class ContestSystemTestHandler(ContestMixin, ContestPageCategoryMixin, base.Hand
             (self.translate('page.contest_main.homework.title'), self.reverse_url('contest_main', ctype='homework')),
             (tdoc['title'], self.reverse_url('contest_detail', ctype='homework', tid=tdoc['doc_id'])),
             (page_title, None))
-        print(tdoc)
+        # print(tdoc)
         self.render('homework_system_test.html', tdoc=tdoc, moss_user_id=options.moss_user_id,
                     page_title=page_title, path_components=path_components)
 
