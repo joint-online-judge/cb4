@@ -193,8 +193,13 @@ class UserLoginHandler(base.Handler, UserSettingsMixin):
       uid = int(data['code'])
       udoc = await user.get_by_uid(uid)
       if not udoc:
+        # dirty fix for graduate students
+        uname = data['account']
+        udoc = await user.get_by_uname(uname)
+        if udoc:
+          uname = data['account'] + '_graduate'
         mail = data['account'] + '@sjtu.edu.cn'
-        await user.add(uid=uid, uname=data['account'], password=data['id'], mail=mail, regip=self.remote_ip,
+        await user.add(uid=uid, uname=uname, password=data['id'], mail=mail, regip=self.remote_ip,
                        realname=data['name'])
         udoc = await user.get_by_uid(uid)
       if not udoc:
