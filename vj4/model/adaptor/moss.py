@@ -81,7 +81,7 @@ async def moss_test(rdocs: list, language: str, ignore_limit: int = 10, wildcard
                 except Exception as e:
                     print(e)
 
-        url = await asyncio.get_running_loop().run_in_executor(None, moss.send)
+        url = await asyncio.get_event_loop().run_in_executor(None, moss.send)
         return url
 
     finally:
