@@ -6,6 +6,7 @@ from mosspy import Moss
 from io import BytesIO
 
 import rarfile, tarfile, zipfile
+import asyncio
 
 from vj4 import constant
 from vj4 import db
@@ -80,7 +81,7 @@ async def moss_test(rdocs: list, language: str, ignore_limit: int = 10, wildcard
                 except Exception as e:
                     print(e)
 
-        url = moss.send()
+        url = await asyncio.get_running_loop().run_in_executor(None, moss.send)
         return url
 
     finally:
