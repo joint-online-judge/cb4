@@ -73,7 +73,7 @@
     "normalize.css": "^7.0.0",
     "nprogress": "^0.2.0",
     "pickadate": "^3.5.6",
-    "prismjs": "^1.14.0",
+    "prismjs": "^1.24.0",
     "rc-tabs": "^9.2.5",
     "react": "^15.6.2",
     "react-codemirror": "^1.0.0",
