@@ -969,6 +969,12 @@ class ContestMosstHandler(ContestMixin, base.Handler):
     @base.sanitize
     async def _post_homework(self, *, ctype: str, tid: objectid.ObjectId, language: str, wildcards: str,
                              ignore_limit: int = 10):
+        async def moss_task():
+            moss_url = await moss.moss_test(rdocs, language=language, wildcards=wildcards, ignore_limit=ignore_limit)
+            if moss_url:
+                _logger.info('moss url %s', moss_url)
+                await contest.update_moss_result(self.domain_id, document.TYPE_HOMEWORK, tid, moss_url=moss_url)
+
         tdoc = await contest.get(self.domain_id, document.TYPE_HOMEWORK, tid)
         if not self.own(tdoc, builtin.PERM_EDIT_HOMEWORK_SELF):
             self.check_perm(builtin.PERM_EDIT_HOMEWORK)
@@ -978,8 +984,6 @@ class ContestMosstHandler(ContestMixin, base.Handler):
         wildcards = self.split_tags(wildcards)
 
         _logger.info('Submit Moss for %s', tid)
-        moss_url = await moss.moss_test(rdocs, language=language, wildcards=wildcards, ignore_limit=ignore_limit)
-        if moss_url:
-            await contest.update_moss_result(self.domain_id, document.TYPE_HOMEWORK, tid, moss_url=moss_url)
+        asyncio.ensure_future(moss_task())
 
         self.json_or_redirect(self.reverse_url('contest_system_test', ctype=ctype, tid=tid))
