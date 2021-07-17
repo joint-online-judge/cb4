@@ -48,7 +48,7 @@ def gravatar_url(gravatar, size=200):
     gravatar_hash = hashlib.md5(gravatar.lower().encode()).hexdigest()
   else:
     gravatar_hash = ''
-  return ('//cn.gravatar.com/avatar/' + gravatar_hash + "?" +
+  return ('//sdn.geekzu.org/avatar/' + gravatar_hash + "?" +
           parse.urlencode({'d': 'mm', 's': str(size)}))
 
 
