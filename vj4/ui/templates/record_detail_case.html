@@ -74,7 +74,7 @@
           </h1>
         </div>
         <div class="section__body">
-          <pre class="compiler-text">{{ rcdoc['stdout'] }}</pre>
+          <pre class="compiler-text" id="compiler-text-stdout">{{ rcdoc['stdout'] }}</pre>
         </div>
       </div>
     </div>
@@ -94,4 +94,25 @@
       </div>
     </div>
   </div>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jsdiff/4.0.2/diff.js"></script>
+  <script>
+      const std_out_elm = document.getElementById("compiler-text-stdout");
+      const stdout = {{ rcdoc['stdout']|tojson }};
+      const answer = {{ rcdoc['answer']|tojson }};
+      const diff = Diff.diffWords(stdout, answer);
+      const fragment = document.createDocumentFragment();
+      for (var i = 0; i < diff.length; i++) {
+        var node;
+        if (diff[i].removed) {
+          node = document.createElement('del');
+          node.style = "text-decoration: none; color: #b30000; background: #fadad7;";
+          node.appendChild(document.createTextNode(diff[i].value));
+        } else if (!diff[i].added) {
+          node = document.createTextNode(diff[i].value);
+        }
+        fragment.appendChild(node);
+      }
+      std_out_elm.textContent = '';
+      std_out_elm.appendChild(fragment);
+  </script>
 {% endblock %}
