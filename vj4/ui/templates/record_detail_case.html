@@ -89,30 +89,40 @@
           </h1>
         </div>
         <div class="section__body">
-          <pre class="compiler-text">{{ rcdoc['answer'] }}</pre>
+          <pre class="compiler-text" id="compiler-text-answer">{{ rcdoc['answer'] }}</pre>
         </div>
       </div>
     </div>
   </div>
   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jsdiff/4.0.2/diff.js"></script>
   <script>
-      const std_out_elm = document.getElementById("compiler-text-stdout");
+      const stdout_elm = document.getElementById("compiler-text-stdout");
+      const answer_elm = document.getElementById("compiler-text-answer");
       const stdout = {{ rcdoc['stdout']|tojson }};
       const answer = {{ rcdoc['answer']|tojson }};
       const diff = Diff.diffWords(stdout, answer);
-      const fragment = document.createDocumentFragment();
+      const stdout_fragment = document.createDocumentFragment();
+      const answer_fragment = document.createDocumentFragment();
       for (var i = 0; i < diff.length; i++) {
-        var node;
+        var stdout_node, answer_node;
         if (diff[i].removed) {
-          node = document.createElement('del');
-          node.style = "text-decoration: none; color: #b30000; background: #fadad7;";
-          node.appendChild(document.createTextNode(diff[i].value));
-        } else if (!diff[i].added) {
-          node = document.createTextNode(diff[i].value);
+          stdout_node = document.createElement('span');
+          stdout_node.style = "color: #b30000; background: #fadad7;";
+          stdout_node.appendChild(document.createTextNode(diff[i].value));
+        } else if (diff[i].added) {
+          answer_node = document.createElement('span');
+          answer_node.style = "color: #406619; background: #eaf2c2;";
+          answer_node.appendChild(document.createTextNode(diff[i].value));
+        } else {
+          stdout_node = document.createTextNode(diff[i].value);
+          answer_node = document.createTextNode(diff[i].value);
         }
-        fragment.appendChild(node);
+        stdout_node && stdout_fragment.appendChild(stdout_node);
+        answer_node && answer_fragment.appendChild(answer_node);
       }
-      std_out_elm.textContent = '';
-      std_out_elm.appendChild(fragment);
+      stdout_elm.textContent = '';
+      stdout_elm.appendChild(stdout_fragment);
+      answer_elm.textContent = '';
+      answer_elm.appendChild(answer_fragment);
   </script>
 {% endblock %}
