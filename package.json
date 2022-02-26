@@ -5,7 +5,7 @@
   "private": true,
   "license": "AGPL-1.0",
   "devDependencies": {
-    "ajv": "^6.4.0",
+    "ajv": "^6.12.3",
     "autoprefixer": "^8.4.1",
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.3",
