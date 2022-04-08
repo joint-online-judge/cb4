@@ -69,7 +69,7 @@
     "jquery.transit": "^0.9.12",
     "katex": "^0.9.0",
     "lodash": "^4.17.21",
-    "moment": "^2.22.1",
+    "moment": "^2.29.2",
     "normalize.css": "^7.0.0",
     "nprogress": "^0.2.0",
     "pickadate": "^3.5.6",
