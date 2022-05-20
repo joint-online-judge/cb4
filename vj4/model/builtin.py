@@ -335,7 +335,7 @@ LEVELS = collections.OrderedDict([(10, 1),
 #                       '<a href="http://www.miitbeian.gov.cn/" target="_blank" rel="nofollow">' +
 #                       '沪ICP备14040537号</a>']
 FOOTER_EXTRA_HTMLS = [
-    '© 2018 - 2020 <a href="https://github.com/umji-autograder/cb4">Joint Online Judge</a>',
+    '© 2018 - 2022 <a href="https://github.com/umji-autograder/cb4">Joint Online Judge</a>',
     version.get(),
     '<a href="https://net.sjtu.edu.cn/" target="_blank" rel="nofollow">沪交ICP备20190085号</a>',
 ]
@@ -509,4 +509,3 @@ DOMAIN_VNODES = collections.OrderedDict([
     {'pic': None, 'name': 'Solution'}
   ])
 ])
-
