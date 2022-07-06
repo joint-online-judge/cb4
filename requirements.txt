@@ -20,7 +20,7 @@ idna==2.6
 Jinja2==3.0.1
 keyring==10.6.0
 keyrings.alt==3.0
-lxml==4.6.5
+lxml==4.9.1
 MarkupSafe==2.0.1
 maxminddb==2.0.3
 mosspy==1.0.9
