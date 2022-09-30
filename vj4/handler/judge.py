@@ -202,7 +202,8 @@ class JudgeNotifyConnection(base.Connection):
             async def reset_record(rid):
                 rdoc = await record.end_judge(rid, self.user['_id'], self.id,
                                               constant.record.STATUS_WAITING, 0, 0, 0)
-                bus.publish_throttle('record_change', rdoc, rdoc['_id'])
+                if rdoc:
+                    bus.publish_throttle('record_change', rdoc, rdoc['_id'])
 
             await asyncio.gather(*[reset_record(rid) for rid in self.rids.values()])
             await self.channel.close()
