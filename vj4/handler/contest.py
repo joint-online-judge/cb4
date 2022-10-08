@@ -506,6 +506,8 @@ class ContestDetailProblemSubmitHandler(ContestMixin, ContestPageCategoryMixin, 
         # TODO(tc-imba): only constant.record.FILE_TYPE_TAR and constant.record.FILE_TYPE_ZIP is supported now
         code_type = self.file_type or constant.record.FILE_TYPE_TEXT
         show_detail = 'show_case_detail' in pdoc and pdoc['show_case_detail']
+        if lang not in (pdoc.get('languages') or []):
+            raise error.InvalidArgumentError('lang')
         rid = await record.add(self.domain_id, pdoc['doc_id'], constant.record.TYPE_SUBMISSION,
                                self.user['_id'], lang, code, tid=tdoc['doc_id'], hidden=False,
                                code_type=code_type, show_detail=show_detail)
