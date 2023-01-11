@@ -34,7 +34,7 @@
     "file-loader": "^1.1.11",
     "friendly-errors-webpack-plugin": "^1.7.0",
     "fs-extra": "^6.0.0",
-    "gulp": "^3.9.1",
+    "gulp": "^4.0.2",
     "gulp-cli": "^2.0.1",
     "gulp-iconfont": "^11.0.1",
     "gulp-if": "^2.0.2",
