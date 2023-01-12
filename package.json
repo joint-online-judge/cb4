@@ -84,7 +84,7 @@
     "redux-logger": "^3.0.6",
     "redux-promise-middleware": "^4.3.0",
     "redux-thunk": "^2.2.0",
-    "select2": "^4.0.6-rc.1",
+    "select2": "^4.0.6",
     "slideout": "^1.0.1",
     "sockjs-client": "^1.6.1",
     "sticky-kit": "^1.1.3",
