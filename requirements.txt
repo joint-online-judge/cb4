@@ -34,7 +34,7 @@ pytz==2021.1
 pyxdg==0.25
 PyYAML==5.4.1
 rarfile==4.0
-requests==2.25.1
+requests==2.31.0
 SecretStorage==2.3.1
 six==1.11.0
 smmap==4.0.0
