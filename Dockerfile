@@ -26,7 +26,7 @@ WORKDIR /srv/cb4
 
 # Install python and node dependencies
 RUN \. "$NVM_DIR/nvm.sh" && nvm use 9 && \
-    npm install --registry=https://registry.npm.taobao.org
+    npm install --registry=https://registry.npmmirror.com
 RUN pip3 install -r ./requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple/
 
 # Build node modules
