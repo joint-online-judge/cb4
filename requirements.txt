@@ -9,7 +9,7 @@ beautifulsoup4==4.9.3
 certifi==2020.12.5
 chardet==4.0.0
 coloredlogs==15.0
-cryptography==39.0.1
+cryptography==2.1.4
 geoip2==4.2.0
 gitdb==4.0.7
 GitPython==3.1.17
