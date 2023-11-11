@@ -2,7 +2,7 @@ git+https://github.com/LukeXuan/aiosmtplib # custom aiosmtlib with ssl support
 git+https://github.com/iceb0y/aiomongo@d229a1f9a0901753c5d66e9a9c45cb756aea2199
 accept==0.1.0
 aioamqp==0.14.0
-aiohttp==2.2.0
+aiohttp==3.7.4
 asn1crypto==0.24.0
 async-timeout==3.0.1
 beautifulsoup4==4.9.3
